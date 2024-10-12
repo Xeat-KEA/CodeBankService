@@ -1,11 +1,17 @@
 package com.codingtext.codebankservice.Entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
+
 @Entity
+@Getter
+@Setter
 @Table(name = "code")
 public class Code {
+    //enum타입 분리
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codeId;
@@ -31,17 +37,6 @@ public class Code {
     @Column(nullable = false)
     private RegisterStatus registerStatus;
 
-    // Getters and Setters...
+
 }
 
-enum Difficulty {
-    EASY, MEDIUM, HARD
-}
-
-enum Algorithm {
-    DP, GRAPH
-}
-
-enum RegisterStatus {
-    CREATED, REQUESTED, REGISTERED
-}
