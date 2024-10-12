@@ -71,7 +71,7 @@ public class CodeDto {
     }
 
 
-    public static CodeDto fromEntity(Code code) {
+    public static CodeDto toDto(Code code) {
         CodeDto codeDto = new CodeDto();
         codeDto.setCodeId(code.getCodeId());
         codeDto.setTitle(code.getTitle());
