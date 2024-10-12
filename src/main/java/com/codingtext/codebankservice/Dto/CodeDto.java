@@ -1,6 +1,10 @@
 package com.codingtext.codebankservice.Dto;
 
+import com.codingtext.codebankservice.Entity.Code;
+
 import java.time.LocalDateTime;
+import java.util.Optional;
+
 public class CodeDto {
     private Long codeId;
     private String title;
@@ -66,5 +70,17 @@ public class CodeDto {
         this.createdAt = createdAt;
     }
 
+
+    public static CodeDto fromEntity(Code code) {
+        CodeDto codeDto = new CodeDto();
+        codeDto.setCodeId(code.getCodeId());
+        codeDto.setTitle(code.getTitle());
+        codeDto.setContent(code.getContent());
+        codeDto.setDifficulty(Optional.ofNullable(code.getDifficulty()).map(Enum::name).orElse("UNKNOWN"));
+        codeDto.setAlgorithm(Optional.ofNullable(code.getAlgorithm()).map(Enum::name).orElse("UNKNOWN"));
+        codeDto.setRegisterStatus(Optional.ofNullable(code.getRegisterStatus()).map(Enum::name).orElse("UNKNOWN"));
+        codeDto.setCreatedAt(code.getCreatedAt());
+        return codeDto;
+    }
 
 }

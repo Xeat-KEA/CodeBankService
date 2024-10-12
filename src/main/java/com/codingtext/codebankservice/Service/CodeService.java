@@ -19,11 +19,11 @@ public class CodeService {
     //전체문제조회
     public Page<CodeDto> getAllCodes(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return codeRepository.findAll(pageable).map(this::convertToDto);
+        return codeRepository.findAll(pageable).map(CodeDto::fromEntity);
     }
 
 
-    // 엔티티를 DTO로 변환
+    /*// 엔티티를 DTO로 변환
     private CodeDto convertToDto(Code code) {
         CodeDto codeDto = new CodeDto();
         codeDto.setCodeId(code.getCodeId());
@@ -34,5 +34,5 @@ public class CodeService {
         codeDto.setRegisterStatus(Optional.ofNullable(code.getRegisterStatus()).map(Enum::name).orElse("UNKNOWN"));
         codeDto.setCreatedAt(code.getCreatedAt());
         return codeDto;
-    }
+    }*/
 }
