@@ -21,11 +21,7 @@ public class CodeHistoryService {
     @Autowired
     private CodeHistoryRepository codeHistoryRepository;
 
-    /*public List<CodeHistoryDto> getUserHistory(Long userId) {
-        return codeHistoryRepository.findAllByUserId(userId).stream()
-                .map(CodeHistoryDto::ToDto)
-                .collect(Collectors.toList());
-    }*/
+
     public List<CodeHistoryDto> getUserHistory(Long userId, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);

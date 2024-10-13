@@ -32,16 +32,5 @@ public class CodeService {
     }
 
 
-    /*// 엔티티를 DTO로 변환
-    private CodeDto convertToDto(Code code) {
-        CodeDto codeDto = new CodeDto();
-        codeDto.setCodeId(code.getCodeId());
-        codeDto.setTitle(code.getTitle());
-        codeDto.setContent(code.getContent());
-        codeDto.setDifficulty(Optional.ofNullable(code.getDifficulty()).map(Enum::name).orElse("UNKNOWN"));
-        codeDto.setAlgorithm(Optional.ofNullable(code.getAlgorithm()).map(Enum::name).orElse("UNKNOWN"));
-        codeDto.setRegisterStatus(Optional.ofNullable(code.getRegisterStatus()).map(Enum::name).orElse("UNKNOWN"));
-        codeDto.setCreatedAt(code.getCreatedAt());
-        return codeDto;
-    }*/
+
 }
