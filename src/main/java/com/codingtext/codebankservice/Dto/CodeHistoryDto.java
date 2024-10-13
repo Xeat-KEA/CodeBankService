@@ -1,7 +1,15 @@
 package com.codingtext.codebankservice.Dto;
 
-import java.time.LocalDateTime;
+import com.codingtext.codebankservice.Entity.Code;
+import com.codingtext.codebankservice.Entity.CodeHistory;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Getter
+@Setter
 public class CodeHistoryDto {
     private Long codeHistoryId;
     private Long codeId;
@@ -11,60 +19,16 @@ public class CodeHistoryDto {
     private LocalDateTime createdAt;
     private LocalDateTime compiledAt;
 
-    // Getters and Setters
-    public Long getCodeHistoryId() {
-        return codeHistoryId;
-    }
 
-    public void setCodeHistoryId(Long codeHistoryId) {
-        this.codeHistoryId = codeHistoryId;
-    }
-
-    public Long getCodeId() {
-        return codeId;
-    }
-
-    public void setCodeId(Long codeId) {
-        this.codeId = codeId;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getWrittenCode() {
-        return writtenCode;
-    }
-
-    public void setWrittenCode(String writtenCode) {
-        this.writtenCode = writtenCode;
-    }
-
-    public Boolean getIsCorrect() {
-        return isCorrect;
-    }
-
-    public void setIsCorrect(Boolean isCorrect) {
-        this.isCorrect = isCorrect;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getCompiledAt() {
-        return compiledAt;
-    }
-
-    public void setCompiledAt(LocalDateTime compiledAt) {
-        this.compiledAt = compiledAt;
+    public static CodeHistoryDto ToDto(CodeHistory history) {
+        CodeHistoryDto historyDto = new CodeHistoryDto();
+        historyDto.setCodeHistoryId(history.getCodeHistoryId());
+        historyDto.setCodeId(history.getCode().getCodeId());
+        historyDto.setUserId(history.getUserId());
+        historyDto.setWrittenCode(history.getWrittenCode());
+        historyDto.setIsCorrect(history.getIsCorrect());
+        historyDto.setCreatedAt(history.getCreatedAt());
+        historyDto.setCompiledAt(history.getCompiledAt());
+        return historyDto;
     }
 }

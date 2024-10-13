@@ -38,5 +38,5 @@ public class CodeHistory {
     @Column(nullable = false)
     private LocalDateTime compiledAt;
 
-    // Getters and Setters...
+
 }

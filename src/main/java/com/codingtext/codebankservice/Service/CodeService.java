@@ -19,7 +19,16 @@ public class CodeService {
     //전체문제조회
     public Page<CodeDto> getAllCodes(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return codeRepository.findAll(pageable).map(CodeDto::fromEntity);
+        return codeRepository.findAll(pageable).map(CodeDto::toDto);
+    }
+    public CodeDto getCodeById(Long codeId) {
+        Optional<Code> code = codeRepository.findById(codeId);
+
+        if (code.isPresent()) {
+            return CodeDto.toDto(code.get());
+        } else {
+            throw new IllegalArgumentException("Code not found with ID: " + codeId);
+        }
     }
 
 
