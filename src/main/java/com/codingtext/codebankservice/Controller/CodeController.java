@@ -28,5 +28,12 @@ public class CodeController {
         return ResponseEntity.ok(codeService.getCodeById(codeId));
     }
 
+    //특정문제조회
+    @GetMapping("/lists/{codeId}")
+    public ResponseEntity<CodeDto> getCodeById(@PathVariable Long codeId) {
+        return ResponseEntity.ok(codeService.getCodeById(codeId));
+    }
+
+
 
 }
