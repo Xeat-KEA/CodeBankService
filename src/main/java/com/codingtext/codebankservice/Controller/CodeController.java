@@ -23,6 +23,10 @@ public class CodeController {
     public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size){
         return ResponseEntity.ok(codeService.getAllCodes(page, size));
     }
+    @GetMapping("/lists/{codeId}")
+    public ResponseEntity<CodeDto> getCodeById(@PathVariable Long codeId) {
+        return ResponseEntity.ok(codeService.getCodeById(codeId));
+    }
 
     //특정문제조회
     @GetMapping("/lists/{codeId}")
