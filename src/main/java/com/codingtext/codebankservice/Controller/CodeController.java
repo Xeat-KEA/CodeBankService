@@ -4,6 +4,8 @@ import com.codingtext.codebankservice.Dto.CodeDto;
 import com.codingtext.codebankservice.Service.CodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +20,11 @@ public class CodeController {
 
     //전체문제조회+페이지처리
     @GetMapping("/lists")
-    public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size){
-        return ResponseEntity.ok(codeService.getAllCodes(page, size));
+    public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) String algorithm,
+                                                     @RequestParam(required = false) String difficulty,
+                                                     @PageableDefault(page = 0, size = 10) Pageable pageable){
+
+        return ResponseEntity.ok(codeService.getFilteredCodes(algorithm, difficulty,pageable.getPageNumber(), pageable.getPageSize()));
     }
 
     //특정문제조회
