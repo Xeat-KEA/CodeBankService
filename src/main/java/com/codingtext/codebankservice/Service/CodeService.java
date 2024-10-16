@@ -1,11 +1,11 @@
 package com.codingtext.codebankservice.Service;
 
 import com.codingtext.codebankservice.Dto.CodeDto;
-import com.codingtext.codebankservice.Entity.Algorithm;
-import com.codingtext.codebankservice.Entity.Code;
-import com.codingtext.codebankservice.Entity.Difficulty;
-import com.codingtext.codebankservice.Entity.RegisterStatus;
-import com.codingtext.codebankservice.Repository.CodeRepository;
+import com.codingtext.codebankservice.entity.Algorithm;
+import com.codingtext.codebankservice.entity.Code;
+import com.codingtext.codebankservice.entity.Difficulty;
+import com.codingtext.codebankservice.entity.RegisterStatus;
+import com.codingtext.codebankservice.repository.CodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +28,7 @@ public class CodeService {
         return codeRepository.findAll(pageable).map(CodeDto::toDto);
     }
     // 알고리즘별 문제 필터링 조회
-    public Page<CodeDto> getFilteredCodes(String algorithm, String difficulty, int page, int size) {
+    /*public Page<CodeDto> getFilteredCodes(String algorithm, String difficulty, int page, int size) {
         Pageable pageable = PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "createdAt"));
 
         if (algorithm != null && difficulty != null) {
@@ -48,6 +48,10 @@ public class CodeService {
             // 둘 다 선택되지 않은 경우 전체 조회
             return codeRepository.findAll(pageable).map(CodeDto::toDto);
         }
+    }*/
+    public Page<CodeDto> getFilteredCodes(String algorithm, String difficulty, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return codeRepository.findCodesByAlgorithmAndDifficulty(algorithm, difficulty, pageable).map(CodeDto::toDto);
     }
 
 

@@ -1,4 +1,4 @@
-package com.codingtext.codebankservice.Controller;
+package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.CodeDto;
 import com.codingtext.codebankservice.Service.CodeService;
@@ -8,8 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/code")

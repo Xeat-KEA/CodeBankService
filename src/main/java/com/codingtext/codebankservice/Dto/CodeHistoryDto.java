@@ -1,7 +1,7 @@
 package com.codingtext.codebankservice.Dto;
 
-import com.codingtext.codebankservice.Entity.Code;
-import com.codingtext.codebankservice.Entity.CodeHistory;
+import com.codingtext.codebankservice.entity.Code;
+import com.codingtext.codebankservice.entity.CodeHistory;
 import lombok.Getter;
 import lombok.Setter;
 

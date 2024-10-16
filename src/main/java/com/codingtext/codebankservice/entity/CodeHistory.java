@@ -1,4 +1,4 @@
-package com.codingtext.codebankservice.Entity;
+package com.codingtext.codebankservice.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

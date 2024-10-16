@@ -1,10 +1,8 @@
 package com.codingtext.codebankservice.Service;
 
-import com.codingtext.codebankservice.Dto.CodeDto;
 import com.codingtext.codebankservice.Dto.CodeHistoryDto;
-import com.codingtext.codebankservice.Entity.Code;
-import com.codingtext.codebankservice.Entity.CodeHistory;
-import com.codingtext.codebankservice.Repository.CodeHistoryRepository;
+import com.codingtext.codebankservice.entity.CodeHistory;
+import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CodeHistoryService {
