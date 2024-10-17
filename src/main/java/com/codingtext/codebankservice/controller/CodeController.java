@@ -32,9 +32,8 @@ public class CodeController {
     }
     // GPT 문제 post 요청으로 저장
     @PostMapping("/gpt/create")
-    public ResponseEntity<CodeDto> createGptCode(@RequestParam String title, @RequestParam String content,
-                                                 @RequestParam String algorithm, @RequestParam String difficulty) {
-        return ResponseEntity.ok(codeService.createGptGeneratedCode(title, content, algorithm, difficulty));
+    public ResponseEntity<CodeDto> createGptCode( @RequestBody CodeDto codedto){
+        return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
     }
 
 

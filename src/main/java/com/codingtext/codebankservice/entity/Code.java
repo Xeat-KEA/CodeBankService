@@ -1,6 +1,7 @@
 package com.codingtext.codebankservice.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
+@Builder
 @Table(name = "code")
 public class Code {
     //enum타입 분리
@@ -36,7 +37,14 @@ public class Code {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RegisterStatus registerStatus;
-
+    public Code(String title, String content, Difficulty difficulty, Algorithm algorithm, LocalDateTime createdAt, RegisterStatus registerStatus) {
+        this.title = title;
+        this.content = content;
+        this.difficulty = difficulty;
+        this.algorithm = algorithm;
+        this.createdAt = createdAt;
+        this.registerStatus = registerStatus;
+    }
 
 }
 

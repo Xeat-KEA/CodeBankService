@@ -67,13 +67,14 @@ public class CodeService {
     }
     // GPT 생성 문제 저장
     public CodeDto createGptGeneratedCode(String title, String content, String algorithm, String difficulty) {
-        Code newCode = new Code();
-        newCode.setTitle(title);
-        newCode.setContent(content);
-        newCode.setAlgorithm(Algorithm.valueOf(algorithm));
-        newCode.setDifficulty(Difficulty.valueOf(difficulty));
-        newCode.setRegisterStatus(RegisterStatus.CREATED); // 기본값 CREATED
-        newCode.setCreatedAt(LocalDateTime.now());
+        Code newCode = Code.builder()
+                .title(title)
+                .content(content)
+                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
+                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
+                .createdAt(LocalDateTime.now())
+                .registerStatus(RegisterStatus.CREATED)
+                .build();
         return CodeDto.toDto(codeRepository.save(newCode));
     }
 
