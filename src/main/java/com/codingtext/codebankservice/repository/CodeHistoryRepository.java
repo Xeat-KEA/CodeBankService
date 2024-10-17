@@ -1,6 +1,6 @@
-package com.codingtext.codebankservice.Repository;
+package com.codingtext.codebankservice.repository;
 
-import com.codingtext.codebankservice.Entity.CodeHistory;
+import com.codingtext.codebankservice.entity.CodeHistory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
