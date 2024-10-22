@@ -10,7 +10,10 @@ import org.springframework.stereotype.Repository;
 public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> {
    /// Page<CodeHistory> findAllByUserId(Long userId);
    Page<CodeHistory> findAllByUserId(Long userId, Pageable pageable);
-
+   // 특정 문제의 총 풀이 횟수
+   long countByCode_CodeId(Long codeId);
+   // 특정 문제의 정답 횟수
+   long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
     //CodeHistory findByCodeIdAndUserId(Long codeId, Long userId);
 }
 

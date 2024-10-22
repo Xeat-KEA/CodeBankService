@@ -2,6 +2,7 @@ package com.codingtext.codebankservice.Dto;
 
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +17,9 @@ public class CodeHistoryDto {
     private Long userId;
     private String writtenCode;
     private Boolean isCorrect;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime compiledAt;
 
 

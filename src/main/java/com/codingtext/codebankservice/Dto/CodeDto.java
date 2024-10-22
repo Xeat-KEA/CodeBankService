@@ -1,6 +1,7 @@
 package com.codingtext.codebankservice.Dto;
 
 import com.codingtext.codebankservice.entity.Code;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,8 +17,9 @@ public class CodeDto {
     private String difficulty;
     private String algorithm;
     private String registerStatus;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
-
+    private double correctRate;
 
 
     public static CodeDto toDto(Code code) {
