@@ -9,6 +9,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
+
 @RestController
 @RequestMapping("/code")
 @RequiredArgsConstructor
@@ -18,11 +21,18 @@ public class CodeController {
 
     //전체문제조회+페이지처리
     @GetMapping("/lists")
-    public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) String algorithm,
-                                                     @RequestParam(required = false) String difficulty,
-                                                     @PageableDefault(page = 0, size = 10) Pageable pageable){
+    public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) List<String> algorithm,
+                                                     @RequestParam(required = false) List<String> difficulty,
+                                                     @RequestParam(required = false) String searchBy,  // 검색 기준 (예: title, codeId)
+                                                     @RequestParam(required = false) String searchText, // 검색어
+                                                     @RequestParam(required = false) String sortBy,     // 정렬 기준 (예: createdAt, correctRate)
+                                                     @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-        return ResponseEntity.ok(codeService.getFilteredCodes(algorithm, difficulty,pageable.getPageNumber(), pageable.getPageSize()));
+        // 알고리즘과 난이도를 List로 바꿈
+        List<String> algorithms = algorithm != null ? algorithm : Collections.emptyList();
+        List<String> difficulties = difficulty != null ? difficulty : Collections.emptyList();
+
+        return ResponseEntity.ok(codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy, pageable));
     }
 
     //특정문제조회

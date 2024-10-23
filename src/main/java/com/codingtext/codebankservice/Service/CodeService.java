@@ -5,66 +5,82 @@ import com.codingtext.codebankservice.entity.Algorithm;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
+import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
 public class CodeService {
-    @Autowired
     private CodeRepository codeRepository;
-
-    //전체문제조회
-    public Page<CodeDto> getAllCodes(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "createdAt"));
-        return codeRepository.findAll(pageable).map(CodeDto::toDto);
+    private CodeHistoryRepository codeHistoryRepository;
+    @Autowired
+    public CodeService(CodeRepository codeRepository, CodeHistoryRepository codeHistoryRepository) {
+        this.codeRepository = codeRepository;
+        this.codeHistoryRepository = codeHistoryRepository;
     }
-    // 알고리즘별 문제 필터링 조회
-    /*public Page<CodeDto> getFilteredCodes(String algorithm, String difficulty, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        if (algorithm != null && difficulty != null) {
-            // 알고리즘과 난이도 둘 다 선택된 경우
-            Algorithm selectedAlgorithm = Algorithm.valueOf(algorithm.toUpperCase());
-            Difficulty selectedDifficulty = Difficulty.valueOf(difficulty.toUpperCase());
-            return codeRepository.findByAlgorithmAndDifficulty(selectedAlgorithm, selectedDifficulty, pageable).map(CodeDto::toDto);
-        } else if (algorithm != null) {
-            // 알고리즘만 선택된 경우
-            Algorithm selectedAlgorithm = Algorithm.valueOf(algorithm.toUpperCase());
-            return codeRepository.findByAlgorithm(selectedAlgorithm, pageable).map(CodeDto::toDto);
-        } else if (difficulty != null) {
-            // 난이도만 선택된 경우
-            Difficulty selectedDifficulty = Difficulty.valueOf(difficulty.toUpperCase());
-            return codeRepository.findByDifficulty(selectedDifficulty, pageable).map(CodeDto::toDto);
-        } else {
-            // 둘 다 선택되지 않은 경우 전체 조회
-            return codeRepository.findAll(pageable).map(CodeDto::toDto);
+
+    // 문제의 정답률을 계산하는 메서드
+    public double calculateCorrectRate(Long codeId) {
+        long totalAttempts = codeHistoryRepository.countByCode_CodeId(codeId);
+        long correctAttempts = codeHistoryRepository.countByCode_CodeIdAndIsCorrectTrue(codeId);
+
+        if (totalAttempts == 0) {
+            return 0.0;  // 풀이 기록이 없는 경우 정답률 0%
         }
-    }*/
-    public Page<CodeDto> getFilteredCodes(String algorithm, String difficulty, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return codeRepository.findCodesByAlgorithmAndDifficulty(algorithm, difficulty, pageable).map(CodeDto::toDto);
+
+        return ((double) correctAttempts / totalAttempts) * 100;
     }
 
+    // 필터링 및 정렬된 문제 목록 반환
+    public Page<CodeDto> getFilteredAndSearchedCodes(List<String> algorithms,
+                                                     List<String> difficulties,
+                                                     String searchBy,
+                                                     String searchText,
+                                                     String sortBy,
+                                                     Pageable pageable) {
+        // 필터링된 문제 목록을 가져옴
+        Page<Code> codes = codeRepository.findCodesWithFilterAndSearch(algorithms, difficulties, searchBy, searchText, sortBy, pageable);
 
-    //특정문제조회
+        // 각 문제의 정답률을 계산하여 CodeDto로 변환
+        List<CodeDto> codeDtos = codes.stream().map(code -> {
+            CodeDto codeDto = CodeDto.toDto(code);
+            codeDto.setCorrectRate(calculateCorrectRate(code.getCodeId()));  // 정답률 계산 후 추가
+            return codeDto;
+        }).collect(Collectors.toList());
+
+        // 정렬 처리 (정답률 기준 정렬)
+        if ("correctRate".equalsIgnoreCase(sortBy)) {
+            codeDtos = codeDtos.stream()
+                    .sorted((dto1, dto2) -> Double.compare(dto2.getCorrectRate(), dto1.getCorrectRate()))  // 정답률 기준으로 정렬
+                    .collect(Collectors.toList());
+        }
+
+        return new PageImpl<>(codeDtos, pageable, codes.getTotalElements());
+    }
+
+    // 특정 문제 조회 시 정답률 포함
     public CodeDto getCodeById(Long codeId) {
-        Optional<Code> code = codeRepository.findById(codeId);
+        Optional<Code> codeOptional = codeRepository.findById(codeId);
 
-        if (code.isPresent()) {
-            return CodeDto.toDto(code.get());
+        if (codeOptional.isPresent()) {
+            Code code = codeOptional.get();
+            CodeDto codeDto = CodeDto.toDto(code);
+            codeDto.setCorrectRate(calculateCorrectRate(codeId));  // 정답률 계산 후 추가
+            return codeDto;
         } else {
             throw new IllegalArgumentException("Code not found with ID: " + codeId);
         }
     }
+
     // GPT 생성 문제 저장
     public CodeDto createGptGeneratedCode(String title, String content, String algorithm, String difficulty) {
         Code newCode = Code.builder()
@@ -75,9 +91,7 @@ public class CodeService {
                 .createdAt(LocalDateTime.now())
                 .registerStatus(RegisterStatus.CREATED)
                 .build();
+
         return CodeDto.toDto(codeRepository.save(newCode));
     }
-
-
-
 }
