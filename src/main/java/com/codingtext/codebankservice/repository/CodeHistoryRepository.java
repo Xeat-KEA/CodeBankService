@@ -15,5 +15,8 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
    // 특정 문제의 정답 횟수
    long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
     //CodeHistory findByCodeIdAndUserId(Long codeId, Long userId);
+
+    // 특정 문제에 대한 풀이 기록이 있는지 확인하는 메서드
+    boolean existsByCode_CodeId(Long codeId);
 }
 
