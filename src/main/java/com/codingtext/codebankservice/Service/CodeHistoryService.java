@@ -55,7 +55,7 @@ public class CodeHistoryService {
             CodeHistory updatedHistory = existingHistory.toBuilder()
                     .compiledAt(LocalDateTime.now())
                     .build();
-            codeHistoryRepository.save(existingHistory);
+            codeHistoryRepository.save(updatedHistory);
         } else {
             // 코드 엔티티 조회
             Code code = codeRepository.findById(historyRequest.getCodeId())
