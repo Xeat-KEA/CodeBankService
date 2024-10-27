@@ -17,6 +17,7 @@ public class CodeHistoryDto {
     private Long userId;
     private String writtenCode;
     private Boolean isCorrect;
+    private Boolean isCreatedByAI;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -30,6 +31,7 @@ public class CodeHistoryDto {
         historyDto.setUserId(history.getUserId());
         historyDto.setWrittenCode(history.getWrittenCode());
         historyDto.setIsCorrect(history.getIsCorrect());
+        historyDto.setIsCreatedByAI(history.getIsCreatedByAI());
         historyDto.setCreatedAt(history.getCreatedAt());
         historyDto.setCompiledAt(history.getCompiledAt());
         return historyDto;
