@@ -46,7 +46,7 @@ dependencies {
 }
 dependencyManagement {
 	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2022.0.3" // 사용하려는 Spring Cloud 버전
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.1" // 최신클라우드
 	}
 }
 
