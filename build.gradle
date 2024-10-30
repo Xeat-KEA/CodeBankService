@@ -41,7 +41,15 @@ dependencies {
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0"
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
 }
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2022.0.3" // 사용하려는 Spring Cloud 버전
+	}
+}
+
 
 tasks.named('test') {
 	useJUnitPlatform()

@@ -31,9 +31,11 @@ public class CodeHistoryController {
     @PostMapping("/{codeId}/compile")
     public ResponseEntity<String> updateHistory(
             @PathVariable Long codeId,
+            @RequestHeader("UserId") Long userId, // 헤더로 UserId 받기
             @RequestBody CodeHistoryDto historyRequest) {
 
         historyRequest.setCodeId(codeId); // codeId를 요청 바디에 설정
+        historyRequest.setUserId(userId); // userId를 요청 바디에 설정
         codeHistoryService.updateOrAddHistory(historyRequest);
         return ResponseEntity.ok("히스토리 저장 완료");
     }
