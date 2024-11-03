@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,4 +44,16 @@ public class CodeHistoryController {
         codeHistoryService.updateOrAddHistory(historyRequest);
         return ResponseEntity.ok("히스토리 저장 완료");
     }
+    //유저가 기존에 풀던 또는 풀었던 문제와 내용을 보여줌
+    @GetMapping("/{userId}/{codeId}")
+    public ResponseEntity<CodeHistoryDto> getHistoryById(@PathVariable Long codeId,@RequestHeader("UserId") Long userId){
+        CodeHistoryDto codeHistoryDto = codeHistoryService.getCodeHistoryByUserIdAndCodeId(userId, codeId);
+
+        if (codeHistoryDto != null) {
+            return ResponseEntity.ok(codeHistoryDto);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
 }

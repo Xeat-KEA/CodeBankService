@@ -22,10 +22,15 @@ import java.util.Optional;
 
 @Service
 public class CodeHistoryService {
+    private final CodeHistoryRepository codeHistoryRepository;
+    private final CodeRepository codeRepository;
+
+    // 생성자 주입 사용
     @Autowired
-    private CodeHistoryRepository codeHistoryRepository;
-    @Autowired
-    private CodeRepository codeRepository;
+    public CodeHistoryService(CodeHistoryRepository codeHistoryRepository, CodeRepository codeRepository) {
+        this.codeHistoryRepository = codeHistoryRepository;
+        this.codeRepository = codeRepository;
+    }
 
 
     public List<CodeHistoryDto> getUserHistory(Long userId, int page, int size) {
@@ -74,6 +79,16 @@ public class CodeHistoryService {
                     .build();
 
             codeHistoryRepository.save(newHistory);
+        }
+    }
+    public CodeHistoryDto getCodeHistoryByUserIdAndCodeId(Long userId, Long codeId) {
+        Optional<CodeHistory> codeHistoryOptional = codeHistoryRepository.findByUserIdAndCodeId(userId, codeId);
+
+        if (codeHistoryOptional.isPresent()) {
+            CodeHistory codeHistory = codeHistoryOptional.get();
+            return CodeHistoryDto.ToDto(codeHistory);
+        } else {
+            return null;
         }
     }
 
