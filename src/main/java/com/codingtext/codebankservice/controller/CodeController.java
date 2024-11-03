@@ -3,6 +3,8 @@ package com.codingtext.codebankservice.controller;
 import com.codingtext.codebankservice.Dto.CodeDto;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 
+@Tag(name = "Code API", description = "코딩 테스트 문제를 관리하는 API")
 @RestController
 @RequestMapping("/code")
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class CodeController {
     private final CodeService codeService;
 
     //전체문제조회+페이지처리
+    @Operation(summary = "전체 문제 조회", description = "알고리즘, 난이도, 검색, 정렬을 적용하여 전체 문제를 조회")
     @GetMapping("/lists")
     public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) List<String> algorithm,
                                                      @RequestParam(required = false) List<String> difficulty,
@@ -37,11 +41,13 @@ public class CodeController {
     }
 
     //특정문제조회
+    @Operation(summary = "특정 문제 조회", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
     public ResponseEntity<CodeDto> getCodeById(@PathVariable Long codeId) {
         return ResponseEntity.ok(codeService.getCodeById(codeId));
     }
     // GPT 문제 post 요청으로 저장
+    @Operation(summary = "GPT로 문제 생성", description = "GPT로 생성된 문제를 저장하는 역할을 수행 아직 사용불가 추후 개선")
     @PostMapping("/gpt/create")
     public ResponseEntity<CodeDto> createGptCode( @RequestBody CodeDto codedto){
         return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
