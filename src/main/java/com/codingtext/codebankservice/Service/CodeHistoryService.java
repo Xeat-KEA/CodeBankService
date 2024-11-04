@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -81,15 +82,30 @@ public class CodeHistoryService {
             codeHistoryRepository.save(newHistory);
         }
     }
-    public CodeHistoryDto getCodeHistoryByUserIdAndCodeId(Long userId, Long codeId) {
-        Optional<CodeHistory> codeHistoryOptional = codeHistoryRepository.findByUserIdAndCodeId(userId, codeId);
 
-        if (codeHistoryOptional.isPresent()) {
-            CodeHistory codeHistory = codeHistoryOptional.get();
-            return CodeHistoryDto.ToDto(codeHistory);
-        } else {
+
+    public CodeHistoryDto getCodeHistoryByUserIdAndCode(Long userId, Code code) {
+        Optional<CodeHistory> codeHistoryOptional = codeHistoryRepository.findByUserIdAndCode(userId, code);
+
+        if (codeHistoryOptional.isEmpty()) {
             return null;
         }
+
+        CodeHistory codeHistory = codeHistoryOptional.get();
+        return CodeHistoryDto.ToDto(codeHistory);
+    }
+
+
+
+
+    //code에서 삭제된 문제를 참조하는 history삭제
+    // 주기적으로 참조되지 않는 history 삭제 - 매일 자정에 실행
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void cleanUpOrphanedHistory() {
+        List<Code> validCodes = codeRepository.findAll();
+        codeHistoryRepository.deleteAllByCodeNotIn(validCodes);
+
     }
 
 
