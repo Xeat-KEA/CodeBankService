@@ -3,6 +3,7 @@ package com.codingtext.codebankservice.controller;
 import com.codingtext.codebankservice.Dto.CodeDto;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeService;
+import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,8 +26,14 @@ import java.util.List;
 public class CodeController {
 
     private final CodeService codeService;
-    @Autowired
+    private final CompileServiceClient compileServiceClient;
     private CodeRepository codeRepository;
+    @Autowired
+    public CodeController(CodeRepository codeRepository,CompileServiceClient compileServiceClient,CodeService codeService){
+        this.codeRepository = codeRepository;
+        this.compileServiceClient = compileServiceClient;
+        this.codeService = codeService;
+    }
 
 
     //전체문제조회+페이지처리
@@ -58,11 +65,13 @@ public class CodeController {
     public ResponseEntity<CodeDto> createGptCode( @RequestBody CodeDto codedto){
         return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
     }
+    @Operation(summary = "문제삭제+testcase삭제요청", description = "특정 codeId를 가진 문제를 삭제하고 해당 codeId를 참조하는 testcase를 삭제하는 요청을 compileservice로 보냄")
     @DeleteMapping("/{codeId}")
     public ResponseEntity<String> deleteCode(@PathVariable Long codeId) {
         try {
             if (codeRepository.existsById(codeId)) {
                 codeRepository.deleteById(codeId);
+                compileServiceClient.deleteCompileData(codeId);
                 return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
