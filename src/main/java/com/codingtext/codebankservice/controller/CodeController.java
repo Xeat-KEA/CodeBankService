@@ -59,12 +59,18 @@ public class CodeController {
     public ResponseEntity<CodeDto> getCodeById(@PathVariable Long codeId) {
         return ResponseEntity.ok(codeService.getCodeById(codeId));
     }
+
     // GPT 문제 post 요청으로 저장
+    //프론트에서 알고리즘,난이도,상세 요구사항(선택)을 받아서 llm서비스로 전달 llm에서
+    // title,content,algorithm,difficulty,registerstatus=created,createdAt + 테스트케이스를 받은후 문제를 따로 분리후 저장,
+    // testcase를 저장하면서 생성된 문제id와 함께 compile서버로 전송
     @Operation(summary = "GPT로 문제 생성", description = "GPT로 생성된 문제를 저장하는 역할을 수행 아직 사용불가 추후 개선")
     @PostMapping("/gpt/create")
     public ResponseEntity<CodeDto> createGptCode( @RequestBody CodeDto codedto){
         return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
     }
+
+    //id를 참조하여 문제를 삭제 그리고 id를 컴파일서버에보내서 id를 참조하는 testcase를 삭제요청
     @Operation(summary = "문제삭제+testcase삭제요청", description = "특정 codeId를 가진 문제를 삭제하고 해당 codeId를 참조하는 testcase를 삭제하는 요청을 compileservice로 보냄")
     @DeleteMapping("/{codeId}")
     public ResponseEntity<String> deleteCode(@PathVariable Long codeId) {
@@ -79,6 +85,28 @@ public class CodeController {
         } catch (Exception e) {
             return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    //client가 admin에게요청
+    //admin으로부터 정식승인된 문제를 받아옴 기존에있던 ai생성문제를 수정,testcase를 컴파일서버로 id와 함께 보냄
+    @PutMapping("/permit/{codeId}")
+    public ResponseEntity<String> updateRegisterStatus(@PathVariable Long codeId){
+        try {
+            if (codeRepository.existsById(codeId)) {
+                codeRepository.createById(codeId);
+                compileServiceClient.createCompileData(codeId);
+                return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
+        }
+    }
+    //admin이 생성한 문제를 받아옴 저장해야함 기존 codeid가 없음,어떻게 testcase를 컴파일서버로 보냄?
+    @PostMapping("/add")
+    public ResponseEntity<CodeDto> createCodeByAdmin( @RequestBody CodeDto codedto){
+        return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
     }
 
 
