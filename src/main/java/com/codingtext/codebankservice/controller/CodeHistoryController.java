@@ -2,6 +2,9 @@ package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.CodeHistoryDto;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
+import com.codingtext.codebankservice.entity.Code;
+import com.codingtext.codebankservice.repository.CodeHistoryRepository;
+import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +19,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/code/history")
 public class CodeHistoryController {
+    private final CodeRepository codeRepository;
+    private final CodeHistoryRepository codeHistoryRepository;
+    private final CodeHistoryService codeHistoryService;
+
     @Autowired
-    private CodeHistoryService codeHistoryService;
+    public CodeHistoryController(CodeRepository codeRepository,
+                                 CodeHistoryRepository codeHistoryRepository,
+                                 CodeHistoryService codeHistoryService) {
+        this.codeRepository = codeRepository;
+        this.codeHistoryRepository = codeHistoryRepository;
+        this.codeHistoryService = codeHistoryService;
+    }
 
     // 특정 유저의 히스토리 조회
     @Operation(summary = "특정 유저의 히스토리 조회", description = "특정 유저의 문제 풀이 히스토리를 페이징하여 조회")
@@ -46,14 +59,26 @@ public class CodeHistoryController {
     }
     //유저가 기존에 풀던 또는 풀었던 문제와 내용을 보여줌
     @GetMapping("/{userId}/{codeId}")
-    public ResponseEntity<CodeHistoryDto> getHistoryById(@PathVariable Long codeId,@RequestHeader("UserId") Long userId){
-        CodeHistoryDto codeHistoryDto = codeHistoryService.getCodeHistoryByUserIdAndCodeId(userId, codeId);
+    public ResponseEntity<CodeHistoryDto> getHistoryById(
+            @PathVariable Long codeId, @RequestHeader("UserId") Long userId) {
 
+        // codeId로 Code 객체 조회
+        Code code = codeRepository.findById(codeId).orElse(null);
+
+        if (code == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Code가 없으면 404 반환
+        }
+
+        // CodeHistoryDto 조회
+        CodeHistoryDto codeHistoryDto = codeHistoryService.getCodeHistoryByUserIdAndCode(userId, code);
+
+        // codeHistoryDto가 null인지 확인하고 상태에 맞는 응답 반환
         if (codeHistoryDto != null) {
-            return ResponseEntity.ok(codeHistoryDto);
+            return ResponseEntity.ok(codeHistoryDto); // codeHistoryDto가 존재하면 200 OK와 함께 반환
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // codeHistoryDto가 없으면 404 반환
         }
     }
+
 
 }

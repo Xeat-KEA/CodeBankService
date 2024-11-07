@@ -1,11 +1,13 @@
 package com.codingtext.codebankservice.repository;
 
+import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,7 +26,11 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     // 특정 문제 ID와 사용자 ID로 풀이 기록 조회
     Optional<CodeHistory> findByCode_CodeIdAndUserId(Long codeId, Long userId);
 
-    Optional<CodeHistory> findByUserIdAndCodeId(Long userId, Long codeId);
+
+    Optional<CodeHistory> findByUserIdAndCode(Long userId, Code code);
+
+    void deleteAllByCodeNotIn(List<Code> codes);
+
 
 
 }
