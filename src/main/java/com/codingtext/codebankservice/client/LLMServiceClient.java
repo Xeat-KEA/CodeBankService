@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "code-compile-service", url = "http://172.16.211.60:18008/code-compile-service")
+@FeignClient(name = "LLM-service", url = "llm-service")
 public interface LLMServiceClient {
 
     //문제 정식 승인시 변경사항있을때 업데이트 요청

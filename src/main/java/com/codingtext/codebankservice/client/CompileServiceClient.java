@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
-@FeignClient(name = "code-compile-service", url = "http://172.16.211.60:18008/code-compile-service")
+@FeignClient(name = "code-compile-service", url = "code-compile-service")
 public interface CompileServiceClient {
 
     //문제삭제할시 해당 Id를 참조하는 testcase삭제요청
