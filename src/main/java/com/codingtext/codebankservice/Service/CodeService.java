@@ -82,7 +82,7 @@ public class CodeService {
         }
     }
 
-    // GPT 생성 문제 저장
+    // GPT 생성한 문제 저장
     public CodeDto createGptGeneratedCode(String title, String content, String algorithm, String difficulty) {
         Code newCode = Code.builder()
                 .title(title)
@@ -126,6 +126,9 @@ public class CodeService {
             codeRepository.deleteAll(codesToDelete);
             System.out.println("number of deleted problems: " + codesToDelete.size());//log용
         }
+    }
+    public Page<Code> getPendingCodes(Pageable pageable) {
+        return codeRepository.findByRegisterStatus("REQUESTED", pageable);
     }
 
 }

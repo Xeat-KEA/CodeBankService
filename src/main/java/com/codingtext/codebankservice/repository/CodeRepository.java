@@ -29,6 +29,8 @@ public interface CodeRepository extends JpaRepository<Code, Long>, CustomReposit
 
     Page<Code> findByRegisterStatus(RegisterStatus registerStatus, Pageable pageable);
 
+    Page<Code> findByRegisterStatus(String registerStatus, Pageable pageable);
+
 
 
 

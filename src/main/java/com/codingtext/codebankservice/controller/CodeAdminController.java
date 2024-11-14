@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,15 +39,10 @@ public class CodeAdminController {
     //승인대기중인 문제조회
     //승인대기중인 문제들의 대한 전체목록,컴파일 서버에서 testcase를 받아와 함께 admin으로 제공
     @Operation(summary = "승인 대기중인 문제 조회", description = "승인 대기중인 문제의 정보를 조회")
-    @GetMapping("/register")
-    public ResponseEntity<CodeWithTestcases> getCodeWithTestcases(@PathVariable Long codeId) {
-        try {
-            CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
-            return ResponseEntity.ok(codeWithTestcases);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
-        }
+    @GetMapping("/register/pending")
+    public ResponseEntity<Page<CodeWithTestcases>> getPendingApprovalCodesWithTestcases(Pageable pageable) {
+        Page<CodeWithTestcases> pendingCodesWithTestcases = codeAdminService.getPendingCodesWithTestcases(pageable);
+        return ResponseEntity.ok(pendingCodesWithTestcases);
     }
 
     //정식등록요청(codebank->admin)

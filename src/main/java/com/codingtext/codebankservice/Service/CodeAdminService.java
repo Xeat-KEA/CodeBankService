@@ -48,16 +48,19 @@ public class CodeAdminService {
     }
 
     //admin이 만든 문제 저장
-    public CodeDto createAdminCode(String title, String content, String algorithm, String difficulty) {
-        Code newCode = Code.builder()
-                .title(title)
-                .content(content)
-                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
-                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
-                .createdAt(LocalDateTime.now())
-                .registerStatus(RegisterStatus.REGISTERED)
-                .build();
+    public Page<CodeWithTestcases> getPendingCodesWithTestcases(Pageable pageable) {
+        // 승인 대기 중인 문제들을 페이지네이션으로 조회
+        Page<Code> pendingCodes = codeRepository.findByRegisterStatus("REQUESTED", pageable);
 
-        return CodeDto.toDto(codeRepository.save(newCode));
+        // 각 문제에 대해 컴파일 서버에서 Testcase 리스트를 가져와 CodeWithTestcases로 변환
+        List<CodeWithTestcases> codeWithTestcasesList = pendingCodes.getContent().stream()
+                .map(code -> {
+                    List<Testcase> testcases = compileServiceClient.getTestcasesByCodeId(code.getCodeId());
+                    return new CodeWithTestcases(code, testcases);
+                })
+                .collect(Collectors.toList());
+
+        // 페이지 정보를 유지하면서 CodeWithTestcases의 페이지 객체 반환
+        return new PageImpl<>(codeWithTestcasesList, pageable, pendingCodes.getTotalElements());
     }
 }
