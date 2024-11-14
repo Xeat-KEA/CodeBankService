@@ -14,7 +14,7 @@ import java.util.Optional;
 public class CodeHistoryDto {
     private Long codeHistoryId;
     private Long codeId;
-    private Long userId;
+    private String userId;
     private String writtenCode;
     private Boolean isCorrect;
     private Boolean isCreatedByAI;

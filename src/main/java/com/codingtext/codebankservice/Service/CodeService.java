@@ -95,9 +95,22 @@ public class CodeService {
 
         return CodeDto.toDto(codeRepository.save(newCode));
     }
+//    //admin이 만든 문제 저장
+//    public CodeDto createAdminCode(String title, String content, String algorithm, String difficulty) {
+//        Code newCode = Code.builder()
+//                .title(title)
+//                .content(content)
+//                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
+//                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
+//                .createdAt(LocalDateTime.now())
+//                .registerStatus(RegisterStatus.REGISTERED)
+//                .build();
+//
+//        return CodeDto.toDto(codeRepository.save(newCode));
+//    }
     // 문제 삭제 스케줄러
-    //@Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
-    @Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복
+    @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
+    //@Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복
     public void deleteUnusedCreatedCodes() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(24); // 24시간이 지난 걸 확인하기위한 기준
 

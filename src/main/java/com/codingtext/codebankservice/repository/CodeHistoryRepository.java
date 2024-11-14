@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> {
    // Page<CodeHistory> findAllByUserId(Long userId);
-   Page<CodeHistory> findAllByUserId(Long userId, Pageable pageable);
+   Page<CodeHistory> findAllByUserId(String userId, Pageable pageable);
    // 특정 문제의 총 풀이 횟수
    long countByCode_CodeId(Long codeId);
    // 특정 문제의 정답 횟수
@@ -24,10 +24,10 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     boolean existsByCode_CodeId(Long codeId);
 
     // 특정 문제 ID와 사용자 ID로 풀이 기록 조회
-    Optional<CodeHistory> findByCode_CodeIdAndUserId(Long codeId, Long userId);
+    Optional<CodeHistory> findByCode_CodeIdAndUserId(Long codeId, String userId);
 
 
-    Optional<CodeHistory> findByUserIdAndCode(Long userId, Code code);
+    Optional<CodeHistory> findByUserIdAndCode(String userId, Code code);
 
     void deleteAllByCodeNotIn(List<Code> codes);
 
