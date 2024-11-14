@@ -43,10 +43,10 @@ dependencies {
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0"
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-	
-	implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes'
-	implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-config'
-	implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-discovery'
+
+	implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client'
+	implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client-config'
+	implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client-loadbalancer'
 
 
 }
