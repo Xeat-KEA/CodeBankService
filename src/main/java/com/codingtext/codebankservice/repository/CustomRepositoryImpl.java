@@ -67,7 +67,7 @@ public class CustomRepositoryImpl implements CustomRepository {
         }
         List<Code> results = queryFactory.selectFrom(code)
                 .where(builder)
-                .orderBy(code.createdAt.desc())
+                .orderBy(code.createdAt.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
