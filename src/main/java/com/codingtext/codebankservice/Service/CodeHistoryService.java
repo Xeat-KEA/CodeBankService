@@ -34,7 +34,7 @@ public class CodeHistoryService {
     }
 
 
-    public List<CodeHistoryDto> getUserHistory(Long userId, int page, int size) {
+    public List<CodeHistoryDto> getUserHistory(String userId, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -84,7 +84,7 @@ public class CodeHistoryService {
     }
 
 
-    public CodeHistoryDto getCodeHistoryByUserIdAndCode(Long userId, Code code) {
+    public CodeHistoryDto getCodeHistoryByUserIdAndCode(String userId, Code code) {
         Optional<CodeHistory> codeHistoryOptional = codeHistoryRepository.findByUserIdAndCode(userId, code);
 
         if (codeHistoryOptional.isEmpty()) {

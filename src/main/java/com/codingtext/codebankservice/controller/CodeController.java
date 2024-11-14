@@ -60,7 +60,7 @@ public class CodeController {
         return ResponseEntity.ok(codeService.getCodeById(codeId));
     }
 
-    // GPT 문제 post 요청으로 저장
+    // GPT 문제 생성 및 post 요청으로 저장
     //프론트에서 알고리즘,난이도,상세 요구사항(선택)을 받아서 llm서비스로 전달 llm에서
     // title,content,algorithm,difficulty,registerstatus=created,createdAt + 테스트케이스를 받은후 문제를 따로 분리후 저장,
     // testcase를 저장하면서 생성된 문제id와 함께 compile서버로 전송
@@ -70,42 +70,48 @@ public class CodeController {
         return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
     }
 
-    //id를 참조하여 문제를 삭제 그리고 id를 컴파일서버에보내서 id를 참조하는 testcase를 삭제요청
-    @Operation(summary = "문제삭제+testcase삭제요청", description = "특정 codeId를 가진 문제를 삭제하고 해당 codeId를 참조하는 testcase를 삭제하는 요청을 compileservice로 보냄")
-    @DeleteMapping("/{codeId}")
-    public ResponseEntity<String> deleteCode(@PathVariable Long codeId) {
-        try {
-            if (codeRepository.existsById(codeId)) {
-                codeRepository.deleteById(codeId);
-                compileServiceClient.deleteCompileData(codeId);
-                return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
-        }
-    }
+//    //특정문제삭제
+//    //id를 참조하여 문제를 삭제 그리고 id를 컴파일서버에보내서 id를 참조하는 testcase를 삭제요청
+//    @Operation(summary = "문제삭제+testcase삭제요청", description = "특정 codeId를 가진 문제를 삭제하고 해당 codeId를 참조하는 testcase를 삭제하는 요청을 compileservice로 보냄")
+//    @DeleteMapping("/{codeId}")
+//    public ResponseEntity<String> deleteCode(@PathVariable Long codeId) {
+//        try {
+//            if (codeRepository.existsById(codeId)) {
+//                codeRepository.deleteById(codeId);
+//                compileServiceClient.deleteCompileData(codeId);
+//                return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
+//            } else {
+//                return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
+//            }
+//        } catch (Exception e) {
+//            return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
+//        }
+//    }
 
-    //client가 admin에게요청
-    //admin으로부터 정식승인된 문제를 받아옴 기존에있던 ai생성문제를 수정,testcase를 컴파일서버로 id와 함께 보냄
-    @PutMapping("/permit/{codeId}")
-    public ResponseEntity<String> updateRegisterStatus(@PathVariable Long codeId){
-        try {
-            if (codeRepository.existsById(codeId)) {
-                codeRepository.createById(codeId);
-                compileServiceClient.createCompileData(codeId);
-                return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
-        }
-    }
+//    //정식등록요청
+//    //client가 admin에게요청
+//    //admin으로부터 정식승인된 문제를 받아옴 기존에있던 ai생성문제를 수정,testcase를 컴파일서버로 id와 함께 보냄
+//    @Operation(summary = "문제정식등록요청", description = "ai를 통해 생성한 문제를 정식등록하기위해 admin으로 등록요청을 보냄")
+//    @PutMapping("/permit/{codeId}")
+//    public ResponseEntity<String> updateRegisterStatus(@PathVariable Long codeId){
+//        try {
+//            if (codeRepository.existsById(codeId)) {
+//                codeRepository.updateRegisterStatusById(codeId, "REGISTERED");
+//                compileServiceClient.createCompileData(codeId);//어드민에서 컴파일서버에서 테스트케이스 업데이트한경우 적용하기위함
+//                return new ResponseEntity<>("업데이트 성공", HttpStatus.OK);
+//            } else {
+//                return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
+//            }
+//        } catch (Exception e) {
+//            return new ResponseEntity<>("문제 업데이트 중 오류 발생", HttpStatus.BAD_REQUEST);
+//        }
+//    }
+    //admin 문제 추가
     //admin이 생성한 문제를 받아옴 저장해야함 기존 codeid가 없음,어떻게 testcase를 컴파일서버로 보냄?
+    @Operation(summary = "admin문제추가", description = "admin이 문제 생성및 추가 요청?")
     @PostMapping("/add")
     public ResponseEntity<CodeDto> createCodeByAdmin( @RequestBody CodeDto codedto){
+
         return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
     }
 

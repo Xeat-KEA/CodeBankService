@@ -36,7 +36,7 @@ public class CodeHistoryController {
     @Operation(summary = "특정 유저의 히스토리 조회", description = "특정 유저의 문제 풀이 히스토리를 페이징하여 조회")
     @GetMapping("/{userId}")
     public ResponseEntity<List<CodeHistoryDto>> getUserHistory(
-            @PathVariable Long userId,
+            @PathVariable String userId,
             @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
         List<CodeHistoryDto> historyDtos = codeHistoryService.getUserHistory(
@@ -49,7 +49,7 @@ public class CodeHistoryController {
     @PostMapping("/compile/{codeId}")
     public ResponseEntity<String> updateHistory(
             @PathVariable Long codeId,
-            @RequestHeader("UserId") Long userId, // 헤더로 UserId 받기
+            @RequestHeader("UserId") String userId, // 헤더로 UserId 받기
             @RequestBody CodeHistoryDto historyRequest) {
 
         historyRequest.setCodeId(codeId); // codeId를 요청 바디에 설정
@@ -60,7 +60,7 @@ public class CodeHistoryController {
     //유저가 기존에 풀던 또는 풀었던 문제와 내용을 보여줌
     @GetMapping("/{userId}/{codeId}")
     public ResponseEntity<CodeHistoryDto> getHistoryById(
-            @PathVariable Long codeId, @RequestHeader("UserId") Long userId) {
+            @PathVariable Long codeId, @RequestHeader("UserId") String userId) {
 
         // codeId로 Code 객체 조회
         Code code = codeRepository.findById(codeId).orElse(null);
