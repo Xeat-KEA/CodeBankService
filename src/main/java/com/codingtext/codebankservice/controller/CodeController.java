@@ -64,7 +64,7 @@ public class CodeController {
     //프론트에서 알고리즘,난이도,상세 요구사항(선택)을 받아서 llm서비스로 전달
     // title,content,algorithm,difficulty,registerstatus=created,createdAt + 테스트케이스를 받은후 문제를 따로 분리후 저장,
     // testcase를 저장하면서 생성된 문제id와 함께 compile서버로 전송
-    @Operation(summary = "GPT로 문제 생성", description = "GPT로 생성된 문제를 저장하는 역할을 수행 아직 사용불가 추후 개선")
+    @Operation(summary = "GPT로 문제 생성/아직구현안됨", description = "GPT로 생성된 문제를 저장하는 역할을 수행 아직 사용불가 추후 개선")
     @PostMapping("/gpt/create")
     public ResponseEntity<CodeDto> createGptCode( @RequestBody CodeDto codedto){
 
@@ -74,7 +74,7 @@ public class CodeController {
     //admin 문제 추가
     //admin이 생성한 문제를 받아옴 저장해야함 기존 codeid가 없음,어떻게 testcase를 컴파일서버로 보냄?
     //상태도 바꿔야함 수정하도록
-    @Operation(summary = "admin문제추가", description = "admin이 문제 생성및 추가 요청?")
+    @Operation(summary = "admin문제추가/아직 구현안됨", description = "admin이 문제 생성및 추가 요청?")
     @PostMapping("/add")
     public ResponseEntity<CodeDto> createCodeByAdmin( @RequestBody CodeDto codedto){
 

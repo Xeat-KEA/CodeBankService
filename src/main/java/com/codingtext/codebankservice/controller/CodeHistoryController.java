@@ -58,7 +58,7 @@ public class CodeHistoryController {
         return ResponseEntity.ok("히스토리 저장 완료");
     }
     //유저가 기존에 풀던 또는 풀었던 문제와 내용을 보여줌
-    @Operation(summary = "풀던/이미푼 문제 이어풀기", description = "기존에 풀던 문제또는 이미 해결한 문제를 히스토리에서 불러옴")
+    @Operation(summary = "풀던|이미푼 문제 이어풀기", description = "기존에 풀던 문제또는 이미 해결한 문제를 히스토리에서 불러옴")
     @GetMapping("/{userId}/{codeId}")
     public ResponseEntity<CodeHistoryDto> getHistoryById(
             @PathVariable Long codeId, @RequestHeader("UserId") String userId) {
