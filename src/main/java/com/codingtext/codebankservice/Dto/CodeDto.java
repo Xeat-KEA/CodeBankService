@@ -2,14 +2,16 @@ package com.codingtext.codebankservice.Dto;
 
 import com.codingtext.codebankservice.entity.Code;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CodeDto {
     private Long codeId;
     private String title;

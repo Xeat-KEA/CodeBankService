@@ -2,10 +2,7 @@ package com.codingtext.codebankservice.client;
 
 import com.codingtext.codebankservice.Dto.Testcase;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,7 +15,7 @@ public interface CompileServiceClient {
 
     //문제 정식 승인시 변경사항있을때 업데이트 요청
     @PostMapping("/compile/send/{Id}")
-    void createCompileData(@PathVariable("Id")Long Id);
+    void sendTestcases(@RequestParam Long codeId, @RequestBody List<Testcase> testcases);
 
     //codeId기반으로 testcase가져오기
     @GetMapping("/testcase/{codeId}")

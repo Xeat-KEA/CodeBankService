@@ -9,10 +9,7 @@ import com.codingtext.codebankservice.repository.CodeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -34,21 +31,21 @@ public class CodeHistoryService {
     }
 
 
-    public List<CodeHistoryDto> getUserHistory(String userId, int page, int size) {
+    public Page<CodeHistoryDto> getUserHistory(String userId, Pageable pageable) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-
+        // Repository 호출로 Page 객체 가져오기
         Page<CodeHistory> codeHistoryPage = codeHistoryRepository.findAllByUserId(userId, pageable);
 
-
-        List<CodeHistoryDto> historyDtoList = new ArrayList<>();
-        for (CodeHistory history : codeHistoryPage.getContent()) {
-            CodeHistoryDto historyDto = CodeHistoryDto.ToDto(history);
-            historyDtoList.add(historyDto);
-        }
-
-        return historyDtoList;
+        // DTO 변환 처리
+        return codeHistoryPage.map(history -> CodeHistoryDto.builder()
+                .codeId(history.getCode().getCodeId())
+                .userId(history.getUserId())
+                .writtenCode(history.getWrittenCode())
+                .isCorrect(history.getIsCorrect())
+                .isCreatedByAI(history.getIsCreatedByAI())
+                .createdAt(history.getCreatedAt())
+                .compiledAt(history.getCompiledAt())
+                .build());
     }
     @Transactional
     public void updateOrAddHistory(CodeHistoryDto historyRequest) {

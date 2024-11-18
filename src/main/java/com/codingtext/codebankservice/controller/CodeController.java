@@ -50,14 +50,27 @@ public class CodeController {
         //List<String> algorithms = algorithm != null ? algorithm : Collections.emptyList();
         //List<String> difficulties = difficulty != null ? difficulty : Collections.emptyList();
 
-        return ResponseEntity.ok(codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable));
+       // return ResponseEntity.ok(codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable));
+        try {
+            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable);
+            return ResponseEntity.ok(codes);
+        } catch (Exception e) {
+            Page<CodeDto> emptyPage = Page.empty();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyPage);
+        }
     }
 
     //특정문제조회
     @Operation(summary = "특정 문제 조회", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
     public ResponseEntity<CodeDto> getCodeById(@PathVariable Long codeId) {
-        return ResponseEntity.ok(codeService.getCodeById(codeId));
+        try {
+            CodeDto code = codeService.getCodeById(codeId);
+            return ResponseEntity.ok(code);
+        } catch (Exception e) {
+            CodeDto emptyCode = new CodeDto();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
+        }
     }
 
     // GPT 문제 생성 및 post 요청으로 저장
@@ -68,7 +81,13 @@ public class CodeController {
     @PostMapping("/gpt/create")
     public ResponseEntity<CodeDto> createGptCode( @RequestBody CodeDto codedto){
 
-        return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
+        try {
+            CodeDto createdCode = codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
+            return ResponseEntity.ok(createdCode);
+        } catch (Exception e) {
+            CodeDto emptyCode = new CodeDto();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
+        }
     }
 
     //admin 문제 추가
@@ -78,7 +97,13 @@ public class CodeController {
     @PostMapping("/add")
     public ResponseEntity<CodeDto> createCodeByAdmin( @RequestBody CodeDto codedto){
 
-        return ResponseEntity.ok(codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty()));
+        try {
+            CodeDto createdCode = codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
+            return ResponseEntity.ok(createdCode);
+        } catch (Exception e) {
+            CodeDto emptyCode = new CodeDto();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
+        }
     }
 
 
