@@ -6,7 +6,7 @@ import com.codingtext.codebankservice.Dto.CodeWithTestcases;
 import com.codingtext.codebankservice.Service.CodeAdminService;
 import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.CompileServiceClient;
-import com.codingtext.codebankservice.client.AdminServiceClient;
+//import com.codingtext.codebankservice.client.AdminServiceClient;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +30,7 @@ public class CodeAdminController {
     private final CompileServiceClient compileServiceClient;
     private final CodeAdminService codeAdminService;
     private final CodeRepository codeRepository;
-    private final AdminServiceClient adminServiceClient;
+    //private final AdminServiceClient adminServiceClient;
     /*@Autowired
     public CodeAdminController(CodeRepository codeRepository,CompileServiceClient compileServiceClient,CodeService codeService,CodeAdminService codeAdminService,AdminServiceClient adminServiceClient){
         this.codeRepository = codeRepository;
@@ -43,7 +43,7 @@ public class CodeAdminController {
     //승인대기중인 문제조회
     //승인대기중인 문제들의 대한 전체목록,컴파일 서버에서 testcase를 받아와 함께 admin으로 제공
     @Operation(summary = "승인 대기중인 문제목록 조회", description = "승인 대기중인 문제목록을 조회")
-    @GetMapping("/register/pending")
+    @GetMapping("/register/pendinglists")
     public ResponseEntity<Page<CodeWithTestcases>> getPendingApprovalCodesWithTestcases(Pageable pageable) {
         try {
             // 서비스 호출로 승인 대기중인 문제 조회
@@ -55,19 +55,32 @@ public class CodeAdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyPage);
         }
     }
+    //요청된 문제 확인
+    //문제를 testacse와함께 제공
+    @Operation(summary = "승인 대기중인 문제 조회", description = "승인 대기중인 문제의 정보를 조회")
+    @GetMapping("/register/pendinglists/{codeId}")
+    public ResponseEntity<CodeWithTestcases> getPendingApprovalCodesWithTestcases(@PathVariable Long codeId) {
+        try {
+            // 서비스 호출로 승인 대기중인 문제 조회
+            CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
+            return ResponseEntity.ok(codeWithTestcases);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 
     //정식등록요청(codebank->admin)
     //client가 코드로 요청 -> codebank에서 기존에있던 ai생성문제+testcase admin에게 보냄
     //created -> REQUESTED 상태로 바꿔주는 역할
     @Operation(summary = "문제 정식등록 요청 보내기", description = "ai를 통해 생성한 문제를 정식등록하기위해 admin으로 등록요청을 보냄")
     @PostMapping("/register/{codeId}")
-    public ResponseEntity<CodeWithTestcases> sendRegisterStatus(@PathVariable Long codeId){
+    public ResponseEntity<String> sendRegisterStatus(@PathVariable Long codeId){
         try {
             if (codeRepository.existsById(codeId)) {
                 codeRepository.updateRegisterStatusById(codeId, "REQUESTED");
                // CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
                 //전송성공
-                //전송성공시 뭘해야 admin에게 알릴수있을까?
+                //전송성공시 뭘해야 user에게 알릴수있을까?
                 return ResponseEntity.status(HttpStatus.OK).body(null);
             } else {
                 //전송실패 or 코드가없음 or 상태변환실패
@@ -82,29 +95,58 @@ public class CodeAdminController {
     //정식등록요청(admin->codebank)->승인됨
     @Operation(summary = "문제 정식등록 요청 승인 후 상태 저장", description = "AI를 통해 생성한 문제를 정식 등록하기 위해 보낸 요청의 답을 받아 응답하기")
     @PutMapping("/register/{codeId}/permit")
-    public ResponseEntity<String> updateRegisterStatus(@PathVariable Long codeId) {
-        try {
-            // 어드민 서비스에서 문제 데이터와 테스트케이스 가져오기
-            ResponseEntity<AdminResponse> response = adminServiceClient.getCodeWithTestcasesFromAdmin(codeId);
+    public ResponseEntity<String> updateRegisterStatus(
+            @PathVariable Long codeId,
+            @RequestBody AdminResponse adminResponse) {
 
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                AdminResponse adminResponse = response.getBody();
-
-                // 테스트케이스를 컴파일 서버로 전송
-                compileServiceClient.sendTestcases(codeId, adminResponse.getTestcases());
-
-                // 로컬 데이터베이스에 코드 업데이트
-                codeRepository.updateRegisterStatusById(codeId, "REGISTERED");
-                codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
-
-                return new ResponseEntity<>("문제가 성공적으로 등록되었습니다.", HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>("어드민 서비스에서 문제 데이터를 가져올 수 없습니다.", HttpStatus.BAD_REQUEST);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>("문제 업데이트 중 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        // 어드민 서비스 응답 데이터 검증
+        if (adminResponse == null || adminResponse.getTestcases() == null || adminResponse.getCodeContent() == null) {
+            return ResponseEntity.badRequest().body("유효하지 않은 어드민 서비스 응답입니다.");
         }
+
+        // 테스트케이스를 컴파일 서비스로 전송
+        try {
+            compileServiceClient.sendTestcases(codeId, adminResponse.getTestcases());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("테스트케이스 전송 실패");
+        }
+
+        // 데이터베이스 상태 업데이트
+        try {
+            codeRepository.updateRegisterStatusById(codeId, "REGISTERED");
+            codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
+        }
+
+        return ResponseEntity.ok("문제가 성공적으로 등록되었습니다.");
     }
+
+
+    //    @Operation(summary = "문제 정식등록 요청 승인 후 상태 저장", description = "AI를 통해 생성한 문제를 정식 등록하기 위해 보낸 요청의 답을 받아 응답하기")
+//    @PutMapping("/register/{codeId}/permit")
+//    public ResponseEntity<CodeWithTestcases> updateRegisterStatus(@PathVariable Long codeId,@RequestBody CodeWithTestcases codeWithTestcases) {
+//        try {
+//
+//
+//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+//                AdminResponse adminResponse = response.getBody();
+//
+//                // 테스트케이스를 컴파일 서버로 전송
+//                compileServiceClient.sendTestcases(codeId, adminResponse.getTestcases());
+//
+//                // 로컬 데이터베이스에 코드 업데이트
+//                codeRepository.updateRegisterStatusById(codeId, "REGISTERED");
+//                codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
+//
+//                return new ResponseEntity<>("문제가 성공적으로 등록되었습니다.", HttpStatus.OK);
+//            } else {
+//                return new ResponseEntity<>("어드민 서비스에서 문제 데이터를 가져올 수 없습니다.", HttpStatus.BAD_REQUEST);
+//            }
+//        } catch (Exception e) {
+//            return new ResponseEntity<>("문제 업데이트 중 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
     //정식등록요청(admin->codebank)->거부됨
     @Operation(summary = "문제 정식등록 요청 거부후 상태저장", description = "ai를 통해 생성한 문제를 정식등록하기위해 보낸 요청의 답을 받아 응답하기")
     @PutMapping("/register/{codeId}/refused")
@@ -140,18 +182,7 @@ public class CodeAdminController {
         }
     }
 
-    //요청된 문제 확인
-    @Operation(summary = "승인 대기중인 문제 조회", description = "승인 대기중인 문제의 정보를 조회")
-    @GetMapping("/register/pending/{codeId}")
-    public ResponseEntity<CodeWithTestcases> getPendingApprovalCodesWithTestcases(@PathVariable Long codeId) {
-        try {
-            // 서비스 호출로 승인 대기중인 문제 조회
-            CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
-            return ResponseEntity.ok(codeWithTestcases);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
+
 
 
 }

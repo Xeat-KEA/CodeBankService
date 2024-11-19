@@ -10,6 +10,7 @@ import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -62,5 +63,21 @@ public class CodeAdminService {
 
         // 페이지 정보를 유지하면서 CodeWithTestcases의 페이지 객체 반환
         return new PageImpl<>(codeWithTestcasesList, pageable, pendingCodes.getTotalElements());
+    }
+    @Transactional
+    public boolean updateCodeWithStatus(Long codeId, String codeContent, String title, String status) {
+        try {
+            // 문제 상태 업데이트
+            codeRepository.updateRegisterStatusById(codeId, status);
+
+            // 문제 데이터 업데이트
+            codeRepository.updateCodeData(codeId, codeContent, title);
+
+            return true; // 성공적으로 업데이트 완료
+        } catch (Exception e) {
+            // 예외 로그 출력
+            System.err.println("코드 업데이트 오류: " + e.getMessage());
+            return false; // 업데이트 실패
+        }
     }
 }

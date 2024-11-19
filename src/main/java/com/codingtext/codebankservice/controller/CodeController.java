@@ -61,6 +61,8 @@ public class CodeController {
     }
 
     //특정문제조회
+    //로그인 안 했을때 토큰으로 필터링해서 로그인된 상태가아님->문제만 보여주기 컴파일(가능?,히스토리생성안하기),저장불가,gpt질의 불가
+    //로그인 했을때 토큰으로 필터링 로그인->진입과 동시에 히스토리 생성 컴파일,저장버튼,gpt질의 하면 히스토리 갱신
     @Operation(summary = "특정 문제 조회", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
     public ResponseEntity<CodeDto> getCodeById(@PathVariable Long codeId) {
