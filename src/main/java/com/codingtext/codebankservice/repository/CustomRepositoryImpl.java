@@ -64,35 +64,32 @@ public class CustomRepositoryImpl implements CustomRepository {
         }
 
         // 동적 정렬 조건 생성
-       // OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortBy, code);
+        OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortBy, code);
 
-        // 쿼리 실행 및 결과 가져오기
-//        List<Code> results = queryFactory.selectFrom(code)
-//                .where(builder)
-//                //.orderBy(orderSpecifier)
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//
-//        long total = queryFactory.select(code.count())
-//                .from(code)
-//                .where(builder)
-//                .fetchOne();
-//
-//        return new PageImpl<>(results, pageable, total);
         List<Code> results = queryFactory.selectFrom(code)
                 .where(builder)
-                .orderBy(code.createdAt.asc())
+                .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long total = queryFactory.selectFrom(code)
+        long total = queryFactory.select(code.count())
+                .from(code)
                 .where(builder)
-                .fetchCount();
+                .fetchOne();
 
         return new PageImpl<>(results, pageable, total);
     }
+    private OrderSpecifier<?> getOrderSpecifier(String sortBy, QCode code) {
+        if ("createdAt".equalsIgnoreCase(sortBy)) {
+            // sortBy가 createdAt인 경우 최신 등록된 문제 먼저
+            return code.createdAt.desc();
+        } else {
+            // 기본 정렬 조건: 가장 먼저 생성된 문제가 먼저
+            return code.createdAt.asc();
+        }
+    }
+
 
 
 

@@ -18,6 +18,7 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
    long countByCode_CodeId(Long codeId);
    // 특정 문제의 정답 횟수
    long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
+
     //CodeHistory findByCodeIdAndUserId(Long codeId, Long userId);
 
     // 특정 문제에 대한 풀이 기록이 있는지 확인하는 메서드
@@ -30,6 +31,11 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     Optional<CodeHistory> findByUserIdAndCode(String userId, Code code);
 
     void deleteAllByCodeNotIn(List<Code> codes);
+
+    //히스토리아이디 탐색
+    Optional<Long> findCodeHistoryIdByUserIdAndCode_CodeId(String userId, Long codeId);
+
+
 
 
 

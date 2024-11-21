@@ -22,6 +22,8 @@ public class CodeDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
     private double correctRate;
+    //문제를 맞춘 사람수
+    private Long correctCount;
 
 
     public static CodeDto toDto(Code code) {
@@ -36,27 +38,10 @@ public class CodeDto {
         //codeDto.setCorrectRate(0.0);
         return codeDto;
     }
-//public static CodeDto toDto(Code code) {
-//    if (code == null) {
-//        return null;
-//    }
-//
-//    return CodeDto.builder()
-//            .codeId(code.getCodeId())
-//            .title(code.getTitle())
-//            .content(code.getContent())
-//            .difficulty(code.getDifficulty() != null ? code.getDifficulty().name() : "UNKNOWN")
-//            .algorithm(code.getAlgorithm() != null ? code.getAlgorithm().name() : "UNKNOWN")
-//            .registerStatus(code.getRegisterStatus() != null ? code.getRegisterStatus().name() : "UNKNOWN")
-//            .createdAt(code.getCreatedAt())
-//            .correctRate(0.0) // 기본값 설정
-//            .build();
-//}
-
-//    public static CodeDto toDtoWithCorrectRate(Code code, double correctRate) {
-//        CodeDto codeDto = toDto(code); // 기본 변환 호출
-//        codeDto.setCorrectRate(correctRate); // 정답률 추가 설정
-//        return codeDto;
-//    }
+    public static CodeDto toDtoWithCorrectCount(Code code, Long correctCount) {
+        CodeDto codeDto = toDto(code);
+        codeDto.setCorrectCount(correctCount); // 정답 수 설정
+        return codeDto;
+    }
 
 }

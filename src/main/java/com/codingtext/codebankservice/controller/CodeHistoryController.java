@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+
 @Tag(name = "Code History API", description = "사용자의 문제 풀이 히스토리를 관리하는 API")
 @RestController
 @RequiredArgsConstructor
@@ -27,10 +29,31 @@ public class CodeHistoryController {
     private final CodeHistoryRepository codeHistoryRepository;
     private final CodeHistoryService codeHistoryService;
 
+    //코드히스토리 아이디를 조회하는 기능
+    @Operation(summary = "코드히스토리 아이디를 조회하는 기능", description = "유저아이디와 코드 아이디를 기반으로 히스토리아이디 조회")
+    @GetMapping("id")
+    public ResponseEntity<?> getCodeHistory(
+            @RequestHeader("UserId") String userId,
+            @RequestParam Long codeId) {
+        try {
+            // 히스토리 조회
+            Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
 
+            if (historyId.isPresent()) {
+                // 히스토리 ID 반환
+                return ResponseEntity.ok(historyId.get());
+            } else {
+                // 히스토리가 없으면 null 반환
+                return ResponseEntity.ok(null);
+            }
+        } catch (Exception e) {
+            // 오류 처리
+            return ResponseEntity.status(500).body("히스토리 조회 중 오류가 발생했습니다.");
+        }
+    }
 
     // 특정 유저의 히스토리 조회
-    @Operation(summary = "특정 유저의 히스토리 조회", description = "특정 유저의 문제 풀이 히스토리를 페이징하여 조회")
+    @Operation(summary = "특정 유저의 히스토리 조회,히스토리는 아직 필터링불가", description = "특정 유저의 문제 풀이 히스토리를 페이징하여 조회")
     @GetMapping("/user")
     public ResponseEntity<Page<CodeHistoryDto>> getUserHistory(
             @RequestHeader("UserId") String userId,

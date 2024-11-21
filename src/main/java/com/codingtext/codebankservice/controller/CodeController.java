@@ -9,6 +9,7 @@ import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Tag(name = "Code API", description = "코딩 테스트 문제를 관리하는 API")
 @RestController
@@ -64,9 +66,36 @@ public class CodeController {
     //로그인 안 했을때 토큰으로 필터링해서 로그인된 상태가아님->문제만 보여주기 컴파일(가능?,히스토리생성안하기),저장불가,gpt질의 불가
     //로그인 했을때 토큰으로 필터링 로그인->진입과 동시에 히스토리 생성 컴파일,저장버튼,gpt질의 기능 사용시 히스토리 갱신
     //히스토리를 생성한후 컴파일,gpt,저장 아무것도 안하면 스케줄러 돌려서 삭제하기
-    @Operation(summary = "특정 문제 조회", description = "특정 문제의 상세 정보를 조회")
+    @Operation(summary = "특정 문제 조회-로그인 유저 전용", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
-    public ResponseEntity<CodeDto> getCodeById(@PathVariable Long codeId) {
+    public ResponseEntity<?> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
+        try {
+            // 히스토리 ID 조회
+            Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
+            if (historyId.isPresent()) {
+                // 히스토리가 있으면 코드 정보 반환
+                CodeDto code = codeService.getCodeById(codeId);
+                //프론트에 historyId도 반환하는가?
+                return ResponseEntity.ok(code);
+            } else {
+                // 히스토리가 없으면 생성 후 코드 정보 반환
+                Long newHistoryId = codeHistoryService.createHistory(userId, codeId);
+                CodeDto code = codeService.getCodeById(codeId);
+                return ResponseEntity.ok(code);
+            }
+        } catch (EntityNotFoundException e) {
+            // 코드가 없는 경우 처리
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
+        } catch (Exception e) {
+            // 기타 예외 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제를 처리하는 동안 오류가 발생했습니다.");
+        }
+    }
+
+    //특정문제조회
+    @Operation(summary = "특정 문제 조회-비로그인 유저전용", description = "특정 문제의 상세 정보를 조회")
+    @GetMapping("non/lists/{codeId}")
+    public ResponseEntity<CodeDto> NongetCodeById(@PathVariable Long codeId) {
         try {
             CodeDto code = codeService.getCodeById(codeId);
             return ResponseEntity.ok(code);
@@ -75,45 +104,7 @@ public class CodeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
         }
     }
-//    @Operation(summary = "특정 문제 조회", description = "특정 문제의 상세 정보를 조회")
-//    @GetMapping("/lists/{codeId}")
-//    public ResponseEntity<CodeResponseDto> getCodeById(
-//            @PathVariable Long codeId,
-//            @RequestHeader(value = "Authorization", required = false) String authHeader) {
-//
-//        // JWT 검증을 통해 로그인 여부 확인
-//        boolean isLoggedIn = false;
-//        String userId = null;
-//
-//        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-//            String token = authHeader.substring(7); // "Bearer " 이후 토큰만 추출
-//            if (JwtUtil.isTokenValid(token)) {
-//                isLoggedIn = true;
-//                userId = JwtUtil.getUserIdFromToken(token); // JWT에서 userId 추출
-//            }
-//        }
-//
-//        // 문제 정보 조회
-//        CodeDto code = codeService.getCodeById(codeId);
-//
-//        if (isLoggedIn) {
-//            // 로그인 상태: 히스토리 생성 또는 갱신
-//            Long codeHistoryId = codeHistoryService.createHistory(userId, codeId);
-//            System.out.println("Generated/Updated CodeHistory ID: " + codeHistoryId);
-//
-//            // 로그인 상태 응답
-//            CodeResponseDto responseDto = new CodeResponseDto(code, isLoggedIn, codeHistoryId);
-//            return ResponseEntity.ok(responseDto);
-//        } else {
-//            // 비로그인 상태 응답
-//            CodeResponseDto responseDto = new CodeResponseDto(
-//                    code,
-//                    false,   // isLoggedIn
-//                    null     // 히스토리 ID 없음
-//            );
-//            return ResponseEntity.ok(responseDto);
-//        }
-//    }
+
 
 
 

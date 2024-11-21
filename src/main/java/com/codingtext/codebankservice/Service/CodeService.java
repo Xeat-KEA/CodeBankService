@@ -40,6 +40,8 @@ public class CodeService {
         return ((double) correctAttempts / totalAttempts) * 100;
     }
 
+
+
     // 필터링 및 정렬된 문제 목록 반환
     public Page<CodeDto> getFilteredAndSearchedCodes(List<String> algorithms,
                                                      List<String> difficulties,
@@ -52,8 +54,12 @@ public class CodeService {
 
         // 각 문제의 정답률을 계산하여 CodeDto로 변환
         List<CodeDto> codeDtos = codes.stream().map(code -> {
+            long correctCount = codeHistoryRepository.countByCode_CodeIdAndIsCorrectTrue(code.getCodeId());
+            double correctRate = calculateCorrectRate(code.getCodeId());
+
             CodeDto codeDto = CodeDto.toDto(code);
-            codeDto.setCorrectRate(calculateCorrectRate(code.getCodeId()));  // 정답률 계산 후 추가
+            codeDto.setCorrectRate(correctRate);
+            codeDto.setCorrectCount(correctCount); // 정답 수 설정
             return codeDto;
         }).collect(Collectors.toList());
 

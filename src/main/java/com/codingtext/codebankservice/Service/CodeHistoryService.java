@@ -25,6 +25,11 @@ public class CodeHistoryService {
     private final CodeHistoryRepository codeHistoryRepository;
     private final CodeRepository codeRepository;
 
+    //히스토리 아이디 탐색
+    public Optional<Long> getHistoryId(String userId, Long codeId) {
+        return codeHistoryRepository.findCodeHistoryIdByUserIdAndCode_CodeId(userId, codeId);
+    }
+
 
     public Long createHistory(String userId, Long codeId) {
         // 코드 엔티티를 조회
