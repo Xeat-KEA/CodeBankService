@@ -2,17 +2,16 @@ package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.AdminResponse;
 import com.codingtext.codebankservice.Dto.CodeDto;
+import com.codingtext.codebankservice.Dto.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Dto.CodeWithTestcases;
 import com.codingtext.codebankservice.Service.CodeAdminService;
 import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.CompileServiceClient;
-//import com.codingtext.codebankservice.client.AdminServiceClient;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -30,15 +29,8 @@ public class CodeAdminController {
     private final CompileServiceClient compileServiceClient;
     private final CodeAdminService codeAdminService;
     private final CodeRepository codeRepository;
-    //private final AdminServiceClient adminServiceClient;
-    /*@Autowired
-    public CodeAdminController(CodeRepository codeRepository,CompileServiceClient compileServiceClient,CodeService codeService,CodeAdminService codeAdminService,AdminServiceClient adminServiceClient){
-        this.codeRepository = codeRepository;
-        this.compileServiceClient = compileServiceClient;
-        this.codeService = codeService;
-        this.codeAdminService = codeAdminService;
-        this.adminServiceClient = adminServiceClient;
-    }*/
+    private final CodeIdWithTestcases codeIdWithTestcases;
+
 
     //승인대기중인 문제조회
     //승인대기중인 문제들의 대한 전체목록,컴파일 서버에서 testcase를 받아와 함께 admin으로 제공
@@ -78,7 +70,7 @@ public class CodeAdminController {
         try {
             if (codeRepository.existsById(codeId)) {
                 codeRepository.updateRegisterStatusById(codeId, "REQUESTED");
-               // CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
+                CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
                 //전송성공
                 //전송성공시 뭘해야 user에게 알릴수있을까?
                 return ResponseEntity.status(HttpStatus.OK).body(null);
@@ -106,7 +98,16 @@ public class CodeAdminController {
 
         // 테스트케이스를 컴파일 서비스로 전송
         try {
-            compileServiceClient.sendTestcases(codeId, adminResponse.getTestcases());
+            //compileServiceClient.updateTestcases(codeId, adminResponse.getTestcases());
+            //adminResponse.getTestcases()를 codeIdwithTestcase에 넣어 compile서비스에 전송
+            Integer id = adminResponse.getCodeId().intValue();
+            // AdminResponse에서 데이터를 추출하여 CodeIdWithTestcases에 매핑
+            CodeIdWithTestcases codeIdWithTestcase = new CodeIdWithTestcases();
+            codeIdWithTestcase.setId(id);
+            codeIdWithTestcase.setTestcases(adminResponse.getTestcases());
+
+            compileServiceClient.saveCode(codeIdWithTestcase);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("테스트케이스 전송 실패");
         }
@@ -123,30 +124,7 @@ public class CodeAdminController {
     }
 
 
-    //    @Operation(summary = "문제 정식등록 요청 승인 후 상태 저장", description = "AI를 통해 생성한 문제를 정식 등록하기 위해 보낸 요청의 답을 받아 응답하기")
-//    @PutMapping("/register/{codeId}/permit")
-//    public ResponseEntity<CodeWithTestcases> updateRegisterStatus(@PathVariable Long codeId,@RequestBody CodeWithTestcases codeWithTestcases) {
-//        try {
-//
-//
-//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-//                AdminResponse adminResponse = response.getBody();
-//
-//                // 테스트케이스를 컴파일 서버로 전송
-//                compileServiceClient.sendTestcases(codeId, adminResponse.getTestcases());
-//
-//                // 로컬 데이터베이스에 코드 업데이트
-//                codeRepository.updateRegisterStatusById(codeId, "REGISTERED");
-//                codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
-//
-//                return new ResponseEntity<>("문제가 성공적으로 등록되었습니다.", HttpStatus.OK);
-//            } else {
-//                return new ResponseEntity<>("어드민 서비스에서 문제 데이터를 가져올 수 없습니다.", HttpStatus.BAD_REQUEST);
-//            }
-//        } catch (Exception e) {
-//            return new ResponseEntity<>("문제 업데이트 중 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+
     //정식등록요청(admin->codebank)->거부됨
     @Operation(summary = "문제 정식등록 요청 거부후 상태저장", description = "ai를 통해 생성한 문제를 정식등록하기위해 보낸 요청의 답을 받아 응답하기")
     @PutMapping("/register/{codeId}/refused")
@@ -172,7 +150,11 @@ public class CodeAdminController {
         try {
             if (codeRepository.existsById(codeId)) {
                 codeRepository.deleteById(codeId);
-                compileServiceClient.deleteCompileData(codeId);
+                //feignclient는 주고받는 함수의 매핑되는 이름이 다르거나 타입이 다르면 전달이 되지않음
+                //Long codeid -> Integer id로 변환해야 가능
+                //특히 json의 경우 이름이 다르면 매핑시키지못함
+                Integer id = codeId.intValue();
+                compileServiceClient.removeCode(id);
                 return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
@@ -181,6 +163,8 @@ public class CodeAdminController {
             return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
         }
     }
+
+
 
 
 

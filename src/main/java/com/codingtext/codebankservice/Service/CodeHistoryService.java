@@ -8,6 +8,7 @@ import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,16 +20,39 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CodeHistoryService {
     private final CodeHistoryRepository codeHistoryRepository;
     private final CodeRepository codeRepository;
 
-    // 생성자 주입 사용
-    @Autowired
-    public CodeHistoryService(CodeHistoryRepository codeHistoryRepository, CodeRepository codeRepository) {
-        this.codeHistoryRepository = codeHistoryRepository;
-        this.codeRepository = codeRepository;
+
+    public Long createHistory(String userId, Long codeId) {
+        // 코드 엔티티를 조회
+        Code code = codeRepository.findById(codeId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 코드가 존재하지 않습니다."));
+        // registerStatus에 따라 isCreatedByAi 값 설정
+        boolean isCreatedByAi = !RegisterStatus.CREATED.equals(code.getRegisterStatus());
+
+        // CodeHistory 객체 생성
+        CodeHistory codeHistory = CodeHistory.builder()
+                .code(code) // Code 엔티티 설정
+                .userId(userId)
+                .writtenCode("hello world!") // 초기에는 작성된 코드가 없음
+                .isCorrect(false) // 초기 상태는 정답이 아님
+                .isCreatedByAI(isCreatedByAi) // AI 문제 여부 초기화
+                .createdAt(LocalDateTime.now()) // 생성 시간
+                .compiledAt(LocalDateTime.now()) // 컴파일 시간은 초기화되지 않음
+                .build();
+
+        // 저장 후 저장된 객체 반환
+        CodeHistory savedHistory = codeHistoryRepository.save(codeHistory);
+        System.out.println("Saved CodeHistory ID: " + savedHistory.getCodeHistoryId());
+
+
+        // 생성된 히스토리 ID 반환
+        return savedHistory.getCodeHistoryId();
     }
+
 
 
     public Page<CodeHistoryDto> getUserHistory(String userId, Pageable pageable) {
@@ -38,6 +62,7 @@ public class CodeHistoryService {
 
         // DTO 변환 처리
         return codeHistoryPage.map(history -> CodeHistoryDto.builder()
+                .codeHistoryId(history.getCodeHistoryId())
                 .codeId(history.getCode().getCodeId())
                 .userId(history.getUserId())
                 .writtenCode(history.getWrittenCode())
@@ -48,7 +73,7 @@ public class CodeHistoryService {
                 .build());
     }
     @Transactional
-    public void updateOrAddHistory(CodeHistoryDto historyRequest) {
+    public void updateOrAddHistory(CodeHistoryDto historyRequest,String userId) {
         Optional<CodeHistory> history = codeHistoryRepository.findByCode_CodeIdAndUserId(
                 historyRequest.getCodeId(), historyRequest.getUserId());
 
@@ -66,17 +91,18 @@ public class CodeHistoryService {
             // registerStatus에 따라 isCreatedByAi 값 설정
             boolean isCreatedByAi = !RegisterStatus.CREATED.equals(code.getRegisterStatus());
             // 새로운 CodeHistory 생성
-            CodeHistory newHistory = CodeHistory.builder()
-                    .code(code) // 조회한 Code 엔티티를 설정
-                    .userId(historyRequest.getUserId())
-                    .writtenCode(historyRequest.getWrittenCode())
-                    .isCorrect(historyRequest.getIsCorrect())
-                    .isCreatedByAI(isCreatedByAi)
-                    .createdAt(LocalDateTime.now())
-                    .compiledAt(LocalDateTime.now())
+            CodeHistory codeHistory = CodeHistory.builder()
+                    .code(code) // Code 엔티티 설정
+                    .userId(userId)
+                    .writtenCode("hello world!") // 초기에는 작성된 코드가 없음
+                    .isCorrect(false) // 초기 상태는 정답이 아님
+                    .isCreatedByAI(isCreatedByAi) // AI 문제 여부 초기화
+                    .createdAt(LocalDateTime.now()) // 생성 시간
+                    .compiledAt(LocalDateTime.now()) // 컴파일 시간은 초기화되지 않음
                     .build();
 
-            codeHistoryRepository.save(newHistory);
+            codeHistoryRepository.save(codeHistory);
+
         }
     }
 

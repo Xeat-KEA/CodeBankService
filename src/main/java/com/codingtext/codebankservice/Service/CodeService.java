@@ -7,6 +7,7 @@ import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,17 +17,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+//import static jdk.internal.net.http.hpack.QuickHuffman.codes;
 
 
 @Service
+@RequiredArgsConstructor
 public class CodeService {
-    private CodeRepository codeRepository;
-    private CodeHistoryRepository codeHistoryRepository;
-    @Autowired
-    public CodeService(CodeRepository codeRepository, CodeHistoryRepository codeHistoryRepository) {
-        this.codeRepository = codeRepository;
-        this.codeHistoryRepository = codeHistoryRepository;
-    }
+    private final CodeRepository codeRepository;
+    private final CodeHistoryRepository codeHistoryRepository;
+
 
 
     // 문제의 정답률을 계산하는 메서드
@@ -68,6 +67,7 @@ public class CodeService {
         return new PageImpl<>(codeDtos, pageable, codes.getTotalElements());
     }
 
+
     // 특정 문제 조회 시 정답률 포함
     public CodeDto getCodeById(Long codeId) {
         Optional<Code> codeOptional = codeRepository.findById(codeId);
@@ -95,19 +95,6 @@ public class CodeService {
 
         return CodeDto.toDto(codeRepository.save(newCode));
     }
-//    //admin이 만든 문제 저장
-//    public CodeDto createAdminCode(String title, String content, String algorithm, String difficulty) {
-//        Code newCode = Code.builder()
-//                .title(title)
-//                .content(content)
-//                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
-//                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
-//                .createdAt(LocalDateTime.now())
-//                .registerStatus(RegisterStatus.REGISTERED)
-//                .build();
-//
-//        return CodeDto.toDto(codeRepository.save(newCode));
-//    }
     // 문제 삭제 스케줄러
     @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
     //@Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복

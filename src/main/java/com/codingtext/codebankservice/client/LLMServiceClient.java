@@ -12,8 +12,7 @@ import java.util.List;
 public interface LLMServiceClient {
 
     //문제 생성 요청
-    @PostMapping("/LLM/create")
-    void createProblem(@RequestBody CodeDto codeDto);
-
+//    @PostMapping("/llm/code-generating")
+//    ResponseEntity<LLMResponseDTO.CodeGenerateResponse> codeGenerator(@RequestBody LLMRequestDTO.codeGeneratingInfo request);
 
 }

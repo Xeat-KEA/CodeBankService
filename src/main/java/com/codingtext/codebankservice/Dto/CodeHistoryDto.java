@@ -36,6 +36,7 @@ public class CodeHistoryDto {
         historyDto.setIsCreatedByAI(history.getIsCreatedByAI());
         historyDto.setCreatedAt(history.getCreatedAt());
         historyDto.setCompiledAt(history.getCompiledAt());
+        System.out.println("CodeHistory ID in DTO: " + history.getCodeHistoryId());
         return historyDto;
     }
 }

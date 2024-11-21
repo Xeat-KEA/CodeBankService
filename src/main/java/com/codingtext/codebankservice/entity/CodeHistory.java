@@ -15,6 +15,7 @@ public class CodeHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "code_history_id", nullable = false)
     private Long codeHistoryId;
 
     @ManyToOne
