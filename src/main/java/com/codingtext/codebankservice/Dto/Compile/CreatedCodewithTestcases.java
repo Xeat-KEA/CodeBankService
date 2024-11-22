@@ -1,4 +1,4 @@
-package com.codingtext.codebankservice.Dto;
+package com.codingtext.codebankservice.Dto.Compile;
 
 import java.util.List;
 

@@ -1,12 +1,10 @@
-package com.codingtext.codebankservice.Dto;
+package com.codingtext.codebankservice.Dto.CodeBank;
 
-import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Getter
 @Setter

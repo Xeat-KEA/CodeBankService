@@ -1,6 +1,6 @@
 package com.codingtext.codebankservice.Service;
 
-import com.codingtext.codebankservice.Dto.CodeDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.entity.Algorithm;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.Difficulty;
@@ -8,11 +8,9 @@ import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -90,19 +88,7 @@ public class CodeService {
         }
     }
 
-    // GPT 생성한 문제 저장
-    public CodeDto createGptGeneratedCode(String title, String content, String algorithm, String difficulty) {
-        Code newCode = Code.builder()
-                .title(title)
-                .content(content)
-                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
-                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
-                .createdAt(LocalDateTime.now())
-                .registerStatus(RegisterStatus.CREATED)
-                .build();
 
-        return CodeDto.toDto(codeRepository.save(newCode));
-    }
     // 문제 삭제 스케줄러
     @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
     //@Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복

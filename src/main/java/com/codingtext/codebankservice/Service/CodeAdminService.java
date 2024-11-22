@@ -1,9 +1,9 @@
 package com.codingtext.codebankservice.Service;
 
-import com.codingtext.codebankservice.Dto.CodeDto;
-import com.codingtext.codebankservice.Dto.CodeIdWithTestcases;
-import com.codingtext.codebankservice.Dto.CodeWithTestcases;
-import com.codingtext.codebankservice.Dto.Testcase;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
+import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
+import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
+import com.codingtext.codebankservice.Dto.Compile.Testcase;
 import com.codingtext.codebankservice.client.BaseResponse;
 import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.entity.Algorithm;
@@ -12,9 +12,7 @@ import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -68,6 +66,18 @@ public class CodeAdminService {
 
         // 페이지 정보를 유지하면서 CodeWithTestcases의 페이지 객체 반환
         return new PageImpl<>(codeWithTestcasesList, pageable, pendingCodes.getTotalElements());
+    }
+    public CodeDto createCode(String title, String content, String algorithm, String difficulty) {
+        Code newCode = Code.builder()
+                .title(title)
+                .content(content)
+                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
+                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
+                .createdAt(LocalDateTime.now())
+                .registerStatus(RegisterStatus.CREATED)
+                .build();
+
+        return CodeDto.toDto(codeRepository.save(newCode));
     }
 //    @Transactional
 //    public boolean updateCodeWithStatus(Long codeId, String codeContent, String title, String status) {

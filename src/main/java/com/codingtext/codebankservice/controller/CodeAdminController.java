@@ -1,20 +1,19 @@
 package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.AdminResponse;
-import com.codingtext.codebankservice.Dto.CodeDto;
-import com.codingtext.codebankservice.Dto.CodeIdWithTestcases;
-import com.codingtext.codebankservice.Dto.CodeWithTestcases;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
+import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
+import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
 import com.codingtext.codebankservice.Service.CodeAdminService;
+import com.codingtext.codebankservice.Service.CodeLLMService;
 import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.CompileServiceClient;
-import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +29,7 @@ public class CodeAdminController {
     private final CodeAdminService codeAdminService;
     private final CodeRepository codeRepository;
     private final CodeIdWithTestcases codeIdWithTestcases;
+
 
 
     //승인대기중인 문제조회
@@ -161,6 +161,21 @@ public class CodeAdminController {
             }
         } catch (Exception e) {
             return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
+        }
+    }
+    //admin 문제 추가
+    //admin이 생성한 문제를 받아옴 저장해야함 기존 codeid가 없음,어떻게 testcase를 컴파일서버로 보냄?
+    //상태도 바꿔야함 수정하도록
+    @Operation(summary = "admin문제추가-testcase별도 코드만 생성및저장", description = "admin이 문제 생성및 추가 요청")
+    @PostMapping("/add")
+    public ResponseEntity<CodeDto> createCodeByAdmin(@RequestBody CodeDto codedto){
+
+        try {
+            CodeDto createdCode = codeAdminService.createCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
+            return ResponseEntity.ok(createdCode);
+        } catch (Exception e) {
+            CodeDto emptyCode = new CodeDto();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
         }
     }
 

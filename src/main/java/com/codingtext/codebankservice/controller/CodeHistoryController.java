@@ -1,7 +1,6 @@
 package com.codingtext.codebankservice.controller;
 
-import com.codingtext.codebankservice.Dto.CodeDto;
-import com.codingtext.codebankservice.Dto.CodeHistoryDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
@@ -9,7 +8,6 @@ import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -17,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @Tag(name = "Code History API", description = "사용자의 문제 풀이 히스토리를 관리하는 API")

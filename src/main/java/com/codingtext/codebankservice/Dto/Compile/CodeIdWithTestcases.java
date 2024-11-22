@@ -1,4 +1,4 @@
-package com.codingtext.codebankservice.Dto;
+package com.codingtext.codebankservice.Dto.Compile;
 
 import lombok.*;
 import org.springframework.stereotype.Component;

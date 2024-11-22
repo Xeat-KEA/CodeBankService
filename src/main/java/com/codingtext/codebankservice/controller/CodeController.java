@@ -1,7 +1,6 @@
 package com.codingtext.codebankservice.controller;
 
-import com.codingtext.codebankservice.Dto.CodeDto;
-import com.codingtext.codebankservice.Dto.CodeResponseDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeService;
 //import com.codingtext.codebankservice.Util.JwtUtil;
@@ -9,7 +8,6 @@ import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,9 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Tag(name = "Code API", description = "코딩 테스트 문제를 관리하는 API")
@@ -110,24 +106,6 @@ public class CodeController {
     }
 
 
-
-
-
-    //admin 문제 추가
-    //admin이 생성한 문제를 받아옴 저장해야함 기존 codeid가 없음,어떻게 testcase를 컴파일서버로 보냄?
-    //상태도 바꿔야함 수정하도록
-    @Operation(summary = "admin문제추가/아직 구현안됨", description = "admin이 문제 생성및 추가 요청?")
-    @PostMapping("/add")
-    public ResponseEntity<CodeDto> createCodeByAdmin( @RequestBody CodeDto codedto){
-
-        try {
-            CodeDto createdCode = codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
-            return ResponseEntity.ok(createdCode);
-        } catch (Exception e) {
-            CodeDto emptyCode = new CodeDto();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
-        }
-    }
 
 
 

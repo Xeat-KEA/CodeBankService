@@ -1,16 +1,12 @@
 package com.codingtext.codebankservice.repository;
 
-import com.codingtext.codebankservice.Dto.CodeDto;
-import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.QCode;
 import com.codingtext.codebankservice.entity.Algorithm;
 import com.codingtext.codebankservice.entity.Difficulty;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

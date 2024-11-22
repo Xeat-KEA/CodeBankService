@@ -1,6 +1,6 @@
 package com.codingtext.codebankservice.Service;
 
-import com.codingtext.codebankservice.Dto.CodeHistoryDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.entity.RegisterStatus;
@@ -9,13 +9,11 @@ import com.codingtext.codebankservice.repository.CodeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
