@@ -5,6 +5,8 @@ import com.codingtext.codebankservice.entity.CodeHistory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,6 +20,9 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
    long countByCode_CodeId(Long codeId);
    // 특정 문제의 정답 횟수
    long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
+
+   //특정 유저의 정답횟수
+    int countCodeHistoriesByUserIdAndIsCorrectTrue(String userId);
 
     //CodeHistory findByCodeIdAndUserId(Long codeId, Long userId);
 
@@ -33,7 +38,9 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     void deleteAllByCodeNotIn(List<Code> codes);
 
     //히스토리아이디 탐색
-    Optional<Long> findCodeHistoryIdByUserIdAndCode_CodeId(String userId, Long codeId);
+    @Query("SELECT h.codeHistoryId FROM CodeHistory h WHERE h.userId = :userId AND h.code.codeId = :codeId")
+    Optional<Long> findCodeHistoryIdByUserIdAndCodeId(@Param("userId") String userId, @Param("codeId") Long codeId);
+
 
 
 

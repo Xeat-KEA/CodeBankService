@@ -69,27 +69,31 @@ public class CodeController {
     @Operation(summary = "특정 문제 조회-로그인 유저 전용", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
     public ResponseEntity<?> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
-        try {
+
             // 히스토리 ID 조회
             Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
+            System.out.println("userid="+userId);
+            System.out.println("historyid="+historyId);
             if (historyId.isPresent()) {
                 // 히스토리가 있으면 코드 정보 반환
                 CodeDto code = codeService.getCodeById(codeId);
+                System.out.println("sucess historyid="+historyId);
                 //프론트에 historyId도 반환하는가?
                 return ResponseEntity.ok(code);
-            } else {
+            } else if(historyId.isEmpty()){
                 // 히스토리가 없으면 생성 후 코드 정보 반환
+                System.out.println("sucess but no historyid="+historyId);
                 Long newHistoryId = codeHistoryService.createHistory(userId, codeId);
                 CodeDto code = codeService.getCodeById(codeId);
                 return ResponseEntity.ok(code);
             }
-        } catch (EntityNotFoundException e) {
-            // 코드가 없는 경우 처리
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
-        } catch (Exception e) {
-            // 기타 예외 처리
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제를 처리하는 동안 오류가 발생했습니다.");
-        }
+                //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
+            else {
+                System.out.println("대실패 userid="+userId);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제를 처리하는 동안 오류가 발생했습니다.");
+            }
+
+
     }
 
     //특정문제조회

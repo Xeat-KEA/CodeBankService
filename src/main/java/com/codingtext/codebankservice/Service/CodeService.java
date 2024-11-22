@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,6 +39,11 @@ public class CodeService {
         }
 
         return ((double) correctAttempts / totalAttempts) * 100;
+    }
+    //특정유저의 정답갯수를 세고 *10(임시 점수 산정방식)을 해서 반환
+    public int calculateUserPoint(String userId){
+        int userPoint = codeHistoryRepository.countCodeHistoriesByUserIdAndIsCorrectTrue(userId);
+        return userPoint*10;
     }
 
 

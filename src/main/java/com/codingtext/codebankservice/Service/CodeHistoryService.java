@@ -27,7 +27,8 @@ public class CodeHistoryService {
 
     //히스토리 아이디 탐색
     public Optional<Long> getHistoryId(String userId, Long codeId) {
-        return codeHistoryRepository.findCodeHistoryIdByUserIdAndCode_CodeId(userId, codeId);
+
+        return codeHistoryRepository.findCodeHistoryIdByUserIdAndCodeId(userId, codeId);
     }
 
 
