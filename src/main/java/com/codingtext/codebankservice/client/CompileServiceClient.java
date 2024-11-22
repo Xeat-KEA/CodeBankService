@@ -5,7 +5,7 @@ import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "code-compile-service", url = "code-compile-service")
+@FeignClient(name = "code-compile-service")
 public interface CompileServiceClient {
 
     //문제 생성시 testcase저장요청
