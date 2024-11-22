@@ -33,7 +33,7 @@ public class CodeController {
     private CodeRepository codeRepository;
 
     @Operation(summary = "특정 문제 조회-비로그인 유저전용", description = "특정 문제의 상세 정보를 조회")
-    @GetMapping("/open")
+    @GetMapping("/open/{codeId}")
     public ResponseEntity<BaseResponse<CodeIdWithTestcases>> TestOpenFeign(@PathVariable Long codeId) {
         Integer id = codeId.intValue();
         BaseResponse<CodeIdWithTestcases> testresponese =  compileServiceClient.findCode(id);
