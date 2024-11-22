@@ -1,9 +1,11 @@
 package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
+import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeService;
 //import com.codingtext.codebankservice.Util.JwtUtil;
+import com.codingtext.codebankservice.client.BaseResponse;
 import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +31,14 @@ public class CodeController {
     private final CompileServiceClient compileServiceClient;
     private final CodeHistoryService codeHistoryService;
     private CodeRepository codeRepository;
+
+    @Operation(summary = "특정 문제 조회-비로그인 유저전용", description = "특정 문제의 상세 정보를 조회")
+    @GetMapping("/open")
+    public ResponseEntity<BaseResponse<CodeIdWithTestcases>> TestOpenFeign(@PathVariable Long codeId) {
+        Integer id = codeId.intValue();
+        BaseResponse<CodeIdWithTestcases> testresponese =  compileServiceClient.findCode(id);
+        return ResponseEntity.ok(testresponese);
+    }
 
 
     //전체문제조회+페이지처리
