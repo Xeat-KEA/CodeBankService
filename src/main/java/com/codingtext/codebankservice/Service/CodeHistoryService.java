@@ -6,6 +6,7 @@ import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import com.codingtext.codebankservice.repository.CustomRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class CodeHistoryService {
     private final CodeHistoryRepository codeHistoryRepository;
     private final CodeRepository codeRepository;
+    private final CustomRepository customRepository;
 
     //히스토리 아이디 탐색
     public Optional<Long> getHistoryId(String userId, Long codeId) {
@@ -59,7 +61,7 @@ public class CodeHistoryService {
 
 
 
-    public Page<CodeHistoryDto> getUserHistory(String userId, Pageable pageable) {
+    /*public Page<CodeHistoryDto> getUserHistory(String userId, Pageable pageable) {
 
         // Repository 호출로 Page 객체 가져오기
         Page<CodeHistory> codeHistoryPage = codeHistoryRepository.findAllByUserId(userId, pageable);
@@ -75,6 +77,15 @@ public class CodeHistoryService {
                 .createdAt(history.getCreatedAt())
                 .compiledAt(history.getCompiledAt())
                 .build());
+    }*/
+    public Page<CodeHistoryDto> getFilteredUserHistories(String userId,
+                                                      List<String> algorithms,
+                                                      List<String> difficulties,
+                                                      String searchBy,
+                                                      String searchText,
+                                                      Pageable pageable) {
+        return customRepository.findUserHistoriesWithFilterAndSearch(
+                userId, algorithms, difficulties, searchBy, searchText, pageable);
     }
     @Transactional
     public void updateOrAddHistory(CodeHistoryDto historyRequest,String userId) {

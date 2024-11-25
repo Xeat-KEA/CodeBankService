@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "code-llm-service")
 public interface LLMServiceClient {
+
     //문제생성 요청
     @PostMapping("/llm/code-generating")
     ResponseEntity<LLMResponseDTO.CodeGenerateClientResponse> codeGenerator(@RequestBody LLMRequestDTO.codeGeneratingInfo request);
