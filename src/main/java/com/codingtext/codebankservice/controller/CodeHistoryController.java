@@ -27,7 +27,7 @@ public class CodeHistoryController {
     private final CodeHistoryService codeHistoryService;
 
     //코드히스토리 아이디를 조회하는 기능
-    @Operation(summary = "코드히스토리 아이디를 조회하는 기능", description = "유저아이디와 코드 아이디를 기반으로 히스토리아이디 조회")
+    @Operation(summary = "test-코드히스토리 아이디를 조회하는 기능", description = "유저아이디와 코드 아이디를 기반으로 히스토리아이디 조회")
     @GetMapping("id")
     public ResponseEntity<?> getCodeHistory(
             @RequestHeader("UserId") String userId,
@@ -92,25 +92,8 @@ public class CodeHistoryController {
     // 유저가 컴파일 또는 문제제출 시 해당 문제를 히스토리에 저장 또는 갱신
     //userId를 참조해서 로그인한경우와 안한경우 구분해서 동작시키기 - x
     //필터적용해서 로그인 비로그인 구분하기 - ㅇ
-    @Operation(summary = "문제 풀이 히스토리 저장 또는 갱신", description = "유저가 문제를 컴파일하면 해당 문제를 히스토리에 저장하거나 이미 기록이있을경 시간 갱신")
-    @PostMapping("/compile/{codeId}")
-    public ResponseEntity<String> updateHistory(
-            @PathVariable Long codeId,
-            @RequestHeader("UserId") String userId, // 헤더로 UserId 받기
-            @RequestBody CodeHistoryDto historyRequest) {
+    //프론트에서 구분하기로함
 
-        try {
-            if(userId!=null) {
-                historyRequest.setCodeId(codeId);
-                historyRequest.setUserId(userId);
-                codeHistoryService.updateOrAddHistory(historyRequest,userId);
-                return ResponseEntity.ok("히스토리 저장 완료");
-            }else{
-                return ResponseEntity.ok("비로그인 접근");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("히스토리 저장 실패: " + e.getMessage());
-        }
     }
 
 
@@ -118,4 +101,4 @@ public class CodeHistoryController {
 
 
 
-}
+

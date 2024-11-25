@@ -20,8 +20,10 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
    long countByCode_CodeId(Long codeId);
    // 특정 문제의 정답 횟수
    long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
+    //난이도 목록 조회
+    List<String> findDistinctCodeDifficultyByUserIdAndIsCorrectTrue(String userId);
 
-   //특정 유저의 정답횟수
+    //특정 유저의 정답횟수
     int countCodeHistoriesByUserIdAndIsCorrectTrue(String userId);
 
     //CodeHistory findByCodeIdAndUserId(Long codeId, Long userId);

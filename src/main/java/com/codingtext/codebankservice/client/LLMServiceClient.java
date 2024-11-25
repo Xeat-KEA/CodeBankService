@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "LLM-service", url = "llm-service")
+@FeignClient(name = "code-llm-service")
 public interface LLMServiceClient {
     //문제생성 요청
     @PostMapping("/llm/code-generating")

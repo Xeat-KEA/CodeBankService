@@ -29,7 +29,7 @@ public class CodeHistoryService {
         return codeHistoryRepository.findCodeHistoryIdByUserIdAndCodeId(userId, codeId);
     }
 
-
+    @Transactional
     public Long createHistory(String userId, Long codeId) {
         // 코드 엔티티를 조회
         Code code = codeRepository.findById(codeId)

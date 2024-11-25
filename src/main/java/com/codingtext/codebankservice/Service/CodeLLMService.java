@@ -7,6 +7,7 @@ import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ public class CodeLLMService {
     //리턴값을 받아와서 문제를 저장하고 compile서비스로 생성된 코드id와 함께 페인클라이언트로 전송
     //프론트에 문제내용+코드아이디를 전송하고 해당 문제에대한 히스토리 생성
     // GPT 생성한 문제 저장
+    @Transactional
     public CodeDto createGptGeneratedCode(String title, String content, String algorithm, String difficulty) {
         Code newCode = Code.builder()
                 .title(title)

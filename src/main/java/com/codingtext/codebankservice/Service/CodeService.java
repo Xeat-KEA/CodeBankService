@@ -7,6 +7,7 @@ import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -90,6 +91,7 @@ public class CodeService {
 
 
     // 문제 삭제 스케줄러
+    @Transactional
     @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
     //@Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복
     public void deleteUnusedCreatedCodes() {

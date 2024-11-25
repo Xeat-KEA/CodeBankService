@@ -66,18 +66,20 @@ public class CodeLLMController {
                     .map(testCaseSpec -> new Testcase(testCaseSpec.getInput(), testCaseSpec.getOutput()))
                     .toList();
 
-            // 컴파일러에게 요청 보낼 데이터 구성
+            // 컴파일러 서비스로 보낼 testcase 분라
             CodeIdWithTestcases compilerRequest = CodeIdWithTestcases.builder()
                     .id(Math.toIntExact(codeId))
                     .testcases(convertedTestCases)
                     .build();
 
-            // 컴파일러에게 요청 보내기
+            // 컴파일러에게 testcase저장 요청
+            //에러분기-저장실패
             compileServiceClient.saveCode(compilerRequest);
             //CodeDto createdCode = codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
             //return ResponseEntity.ok(createdCode);
 
-            //무엇을 리턴해야하는가?
+            //무엇을 리턴?-> 생성된 문제 보여주기
+            //에러분기-코드생성/저장 실패
             return ResponseEntity.ok(createdCode);
 
         } catch (Exception e) {

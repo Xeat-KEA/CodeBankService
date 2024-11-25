@@ -12,6 +12,7 @@ import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,6 +36,7 @@ public class CodeAdminService {
     public Page<Code> getCreatedProblems(Pageable pageable) {
         return codeRepository.findByRegisterStatus(RegisterStatus.REQUESTED, pageable);
     }
+    @Transactional
     public CodeWithTestcases getCodeWithTestcases(Long codeId) {
         Code code = codeRepository.findById(codeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 문제가 존재하지 않습니다."));
@@ -47,7 +49,7 @@ public class CodeAdminService {
         return new CodeWithTestcases(code, testcases);
     }
 
-    //admin이 만든 문제 저장
+
     public Page<CodeWithTestcases> getPendingCodesWithTestcases(Pageable pageable) {
         // 승인 대기 중인 문제들을 페이지네이션으로 조회
         Page<Code> pendingCodes = codeRepository.findByRegisterStatus("REQUESTED", pageable);
@@ -67,6 +69,7 @@ public class CodeAdminService {
         // 페이지 정보를 유지하면서 CodeWithTestcases의 페이지 객체 반환
         return new PageImpl<>(codeWithTestcasesList, pageable, pendingCodes.getTotalElements());
     }
+    @Transactional
     public CodeDto createCode(String title, String content, String algorithm, String difficulty) {
         Code newCode = Code.builder()
                 .title(title)

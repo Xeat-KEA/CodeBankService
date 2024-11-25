@@ -1,4 +1,4 @@
-package com.codingtext.codebankservice.Dto;
+package com.codingtext.codebankservice.Dto.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

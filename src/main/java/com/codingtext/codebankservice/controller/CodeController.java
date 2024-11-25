@@ -32,7 +32,7 @@ public class CodeController {
     private final CodeHistoryService codeHistoryService;
     private CodeRepository codeRepository;
 
-    @Operation(summary = "특정 문제 조회-비로그인 유저전용", description = "특정 문제의 상세 정보를 조회")
+    @Operation(summary = "feignclient test용도", description = "컴파일서비에서 codeId에 따른 테스트케이스 조회")
     @GetMapping("/open/{codeId}")
     public ResponseEntity<BaseResponse<CodeIdWithTestcases>> TestOpenFeign(@PathVariable Long codeId) {
         Integer id = codeId.intValue();
