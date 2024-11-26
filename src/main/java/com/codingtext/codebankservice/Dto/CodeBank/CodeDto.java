@@ -26,6 +26,7 @@ public class CodeDto {
     private Long correctCount;
 
 
+
     public static CodeDto toDto(Code code) {
         CodeDto codeDto = new CodeDto();
         codeDto.setCodeId(code.getCodeId());
