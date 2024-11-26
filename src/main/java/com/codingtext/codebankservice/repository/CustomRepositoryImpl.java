@@ -14,7 +14,7 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Repository
+@Repository("customRepository")
 public class CustomRepositoryImpl implements CustomRepository {
     private final JPAQueryFactory queryFactory;
 

@@ -37,15 +37,15 @@ public class CodeAdminController {
     @Operation(summary = "승인 대기중인 문제목록 조회", description = "승인 대기중인 문제목록을 조회")
     @GetMapping("/register/pendinglists")
     public ResponseEntity<Page<CodeWithTestcases>> getPendingApprovalCodesWithTestcases(Pageable pageable) {
-        try {
+        //try {
             // 서비스 호출로 승인 대기중인 문제 조회
             Page<CodeWithTestcases> pendingCodesWithTestcases = codeAdminService.getPendingCodesWithTestcases(pageable);
             return ResponseEntity.ok(pendingCodesWithTestcases);
-        } catch (Exception e) {
-            // 실패 시 400 상태 코드와 오류 메시지 반환
-            Page<CodeWithTestcases> emptyPage = Page.empty(pageable);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyPage);
-        }
+//        } catch (Exception e) {
+//            // 실패 시 400 상태 코드와 오류 메시지 반환
+//            Page<CodeWithTestcases> emptyPage = Page.empty(pageable);
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyPage);
+//        }
     }
     //요청된 문제 확인
     //문제를 testacse와함께 제공

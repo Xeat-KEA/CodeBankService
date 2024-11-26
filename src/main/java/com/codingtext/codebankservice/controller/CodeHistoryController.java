@@ -3,6 +3,7 @@ package com.codingtext.codebankservice.controller;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.entity.Code;
+import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import com.codingtext.codebankservice.repository.CustomRepository;
@@ -91,6 +92,7 @@ public class CodeHistoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // codeHistoryDto가 없으면 404 반환
         }
     }
+
 
     // 유저가 컴파일 또는 문제제출 시 해당 문제를 히스토리에 저장 또는 갱신
     //userId를 참조해서 로그인한경우와 안한경우 구분해서 동작시키기 - x

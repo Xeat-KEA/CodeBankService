@@ -49,10 +49,11 @@ public class CodeAdminService {
         return new CodeWithTestcases(code, testcases);
     }
 
-
+    @Transactional
     public Page<CodeWithTestcases> getPendingCodesWithTestcases(Pageable pageable) {
         // 승인 대기 중인 문제들을 페이지네이션으로 조회
-        Page<Code> pendingCodes = codeRepository.findByRegisterStatus("REQUESTED", pageable);
+        Page<Code> pendingCodes = codeRepository.findByRegisterStatus(RegisterStatus.REQUESTED, pageable);
+
 
         // 각 문제에 대해 컴파일 서버에서 Testcase 리스트를 가져와 CodeWithTestcases로 변환
         List<CodeWithTestcases> codeWithTestcasesList = pendingCodes.getContent().stream()
@@ -62,6 +63,7 @@ public class CodeAdminService {
                     BaseResponse<CodeIdWithTestcases> response = compileServiceClient.findCode(id);
                     List<Testcase> testcases = response.getData().getTestcases();
                     //List<Testcase> testcases = compileServiceClient.getTestcasesByCodeId(code.getCodeId());
+
                     return new CodeWithTestcases(code, testcases);
                 })
                 .collect(Collectors.toList());

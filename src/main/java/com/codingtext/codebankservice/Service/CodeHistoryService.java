@@ -10,6 +10,7 @@ import com.codingtext.codebankservice.repository.CustomRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,25 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+
 public class CodeHistoryService {
+
     private final CodeHistoryRepository codeHistoryRepository;
+
+
+    @Qualifier("codeRepository") // 'codeRepository' Bean을 주입
     private final CodeRepository codeRepository;
+
+    @Qualifier("customRepository") // 'customRepository' Bean을 주입
     private final CustomRepository customRepository;
+    public CodeHistoryService(CodeHistoryRepository codeHistoryRepository,
+                              @Qualifier("codeRepository") CodeRepository codeRepository,
+                              @Qualifier("customRepository") CustomRepository customRepository) {
+        this.codeHistoryRepository = codeHistoryRepository;
+        this.codeRepository = codeRepository;
+        this.customRepository = customRepository;
+    }
+
 
     //히스토리 아이디 탐색
     public Optional<Long> getHistoryId(String userId, Long codeId) {
