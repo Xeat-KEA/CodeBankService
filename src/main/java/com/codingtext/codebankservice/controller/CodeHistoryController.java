@@ -5,6 +5,7 @@ import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import com.codingtext.codebankservice.repository.CustomRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @Tag(name = "Code History API", description = "사용자의 문제 풀이 히스토리를 관리하는 API")
@@ -25,6 +27,7 @@ public class CodeHistoryController {
     private final CodeRepository codeRepository;
     private final CodeHistoryRepository codeHistoryRepository;
     private final CodeHistoryService codeHistoryService;
+    private final CustomRepository customRepository;
 
     //코드히스토리 아이디를 조회하는 기능
     @Operation(summary = "test-코드히스토리 아이디를 조회하는 기능", description = "유저아이디와 코드 아이디를 기반으로 히스토리아이디 조회")
@@ -50,20 +53,20 @@ public class CodeHistoryController {
     }
 
     // 특정 유저의 히스토리 조회
-    @Operation(summary = "특정 유저의 히스토리 조회,히스토리는 아직 필터링불가", description = "특정 유저의 문제 풀이 히스토리를 페이징하여 조회")
+    @Operation(summary = "유저 히스토리 조회", description = "알고리즘, 난이도, 검색, 정렬을 적용하여 유저 히스토리를 조회")
     @GetMapping("/user")
-    public ResponseEntity<Page<CodeHistoryDto>> getUserHistory(
+    public ResponseEntity<Page<CodeHistoryDto>> getUserHistories(
             @RequestHeader("UserId") String userId,
+            @RequestParam(required = false) List<String> algorithms,
+            @RequestParam(required = false) List<String> difficulties,
+            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false) String searchText,
             @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-        try {
-            // 서비스 호출로 유저 히스토리 조회
-            Page<CodeHistoryDto> historyDtos = codeHistoryService.getUserHistory(userId, pageable);
-            return ResponseEntity.ok(historyDtos);
-        } catch (Exception e) {
-            // 실패 시 400 상태 코드와 빈 페이지 반환
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Page.empty(pageable));
-        }
+        Page<CodeHistoryDto> histories = codeHistoryService.getFilteredUserHistories(
+                userId, algorithms, difficulties, searchBy, searchText, pageable);
+
+        return ResponseEntity.ok(histories);
     }
     //유저가 기존에 풀던 또는 풀었던 문제와 내용을 보여줌
     @Operation(summary = "풀던|이미푼 문제 이어풀기", description = "기존에 풀던 문제또는 이미 해결한 문제를 히스토리에서 불러옴")
