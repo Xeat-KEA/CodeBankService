@@ -2,6 +2,7 @@ package com.codingtext.codebankservice.repository;
 
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
+import com.codingtext.codebankservice.entity.Difficulty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +22,10 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
    // 특정 문제의 정답 횟수
    long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
     //난이도 목록 조회
-    List<String> findDistinctCodeDifficultyByUserIdAndIsCorrectTrue(String userId);
+    @Query("SELECT DISTINCT c.code.difficulty FROM CodeHistory c WHERE c.userId = :userId AND c.isCorrect = true")
+    List<Difficulty> findDistinctCodeDifficultyByUserIdAndIsCorrectTrue(String userId);
+
+
 
     //특정 유저의 정답횟수
     int countCodeHistoriesByUserIdAndIsCorrectTrue(String userId);

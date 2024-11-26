@@ -18,13 +18,13 @@ public class CodeUserController {
     //userId와 점수만 리턴
     private final CodeUserService codeUserService;
 
-//    @Operation(summary = "특정유저의 점수를 계산해서 리턴하는 기능", description = "유저아이디 기반으로 조회 유저아이디+점수 반환")
-//    @GetMapping("/point")
-//    public ResponseEntity<UserPoint> getPoint(@RequestHeader("UserId") String userId) {
-//        int point = codeUserService.calculateUserPoint(userId);
-//        UserPoint userPoint = new UserPoint(userId,point);
-//        return ResponseEntity.ok(userPoint);
-//    }
+    @Operation(summary = "유저 점수 계산-테스트용", description = "유저아이디 기반으로 조회 유저아이디+점수 반환")
+    @GetMapping("/point")
+    public ResponseEntity<UserPoint> getPoint(@RequestHeader("UserId") String userId) {
+        int point = codeUserService.calculateUserPoint(userId);
+        UserPoint userPoint = new UserPoint(userId,point);
+        return ResponseEntity.ok(userPoint);
+    }
 //    @Operation(summary = "유저아이디확인용 나중에 삭제할것", description = "유저아이디 반환")
 //    @GetMapping("/id")
 //    public String getUserId(@RequestHeader("UserId") String userId) {
