@@ -8,6 +8,7 @@ import com.codingtext.codebankservice.Service.CodeAdminService;
 import com.codingtext.codebankservice.Service.CodeLLMService;
 import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.CompileServiceClient;
+import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,16 +65,18 @@ public class CodeAdminController {
     //정식등록요청(codebank->admin)
     //client가 코드로 요청 -> codebank에서 기존에있던 ai생성문제+testcase admin에게 보냄
     //created -> REQUESTED 상태로 바꿔주는 역할
-    @Operation(summary = "문제 정식등록 요청 보내기", description = "ai를 통해 생성한 문제를 정식등록하기위해 admin으로 등록요청을 보냄")
+    @Operation(summary = "문제 정식등록 요청 보내기", description = "ai를 통해 생성한 문제를 정식등록하기위해 문제의 등록상태를 created->REQUESTED로 변환, admin으로 등록요청을 보냄(요청미구현)")
     @PostMapping("/register/{codeId}")
     public ResponseEntity<String> sendRegisterStatus(@PathVariable Long codeId){
         try {
-            if (codeRepository.existsById(codeId)) {
-                codeRepository.updateRegisterStatusById(codeId, "REQUESTED");
+            //상태가 created인 경우에만 요청을 보내야함 이미 registered인 상태는 건들면안됨(아직안함)
+            if (codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.CREATED)) {
+                codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REQUESTED);
                 CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
                 //전송성공
                 //전송성공시 뭘해야 user에게 알릴수있을까?
                 return ResponseEntity.status(HttpStatus.OK).body(null);
+
             } else {
                 //전송실패 or 코드가없음 or 상태변환실패
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -82,7 +85,7 @@ public class CodeAdminController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(null);
-        }
+      }
     }
     //정식등록요청(admin->codebank)->승인됨
     @Operation(summary = "문제 정식등록 요청 승인 후 상태 저장", description = "AI를 통해 생성한 문제를 정식 등록하기 위해 보낸 요청의 답을 받아 응답하기")
@@ -114,7 +117,7 @@ public class CodeAdminController {
 
         // 데이터베이스 상태 업데이트
         try {
-            codeRepository.updateRegisterStatusById(codeId, "REGISTERED");
+            codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REGISTERED);
             codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
@@ -131,7 +134,7 @@ public class CodeAdminController {
     public ResponseEntity<String> refuseRegisterStatus(@PathVariable Long codeId){
         try {
             if (codeRepository.existsById(codeId)) {
-                codeRepository.updateRegisterStatusById(codeId, "CREATED");//승인실패로 requested->created
+                codeRepository.updateRegisterStatusById(codeId, RegisterStatus.CREATED);//승인실패로 requested->created
                 //compileServiceClient.createCompileData(codeId);//어드민에서 컴파일서버에서 테스트케이스 업데이트한경우 적용하기위함
                 return new ResponseEntity<>("승인거부됨", HttpStatus.OK);
             } else {

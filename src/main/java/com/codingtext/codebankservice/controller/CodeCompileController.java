@@ -27,16 +27,13 @@ public class CodeCompileController {
     private final UserServiceClient userServiceClient;
 
     @Operation(summary = "문제 풀이 히스토리 저장 또는 갱신", description = "유저가 문제를 컴파일하면 해당 문제를 히스토리에 저장하거나 이미 기록이있을경 시간 갱신")
-    @PostMapping("/{codeId}")
-    public ResponseEntity<String> updateHistory(
-            @PathVariable Long codeId,
-            @RequestHeader("UserId") String userId, // 헤더로 UserId 받기
-            @RequestBody CodeHistoryDto historyRequest) {
+    @PostMapping("/com")
+    public ResponseEntity<String> updateHistory(@RequestBody CodeHistoryDto historyRequest) {
+        String userId = historyRequest.getUserId();
+       // Long codeId = historyRequest.getCodeId();
 
         try {
-            if (userId != null) {
-                historyRequest.setCodeId(codeId);
-                historyRequest.setUserId(userId);
+            if (userId != null) {//컴파일 기반으로 바꾸기
                 codeHistoryService.updateOrAddHistory(historyRequest, userId);
                 return ResponseEntity.ok("히스토리 저장 완료");
             } else {
@@ -47,19 +44,16 @@ public class CodeCompileController {
         }
     }
     @Operation(summary = "정답제출시 히스토리 생성/갱신 및 점수전달", description = "유저가 문제를 제출하면 해당 문제를 히스토리에 저장하거나 이미 기록이 있을경우 시간및정답여부 갱신 + 유저서비스로 점수전달")
-    @PostMapping("/submit/{codeId}")
-    public ResponseEntity<String> updateHistoryAndSendPoint(
-            @PathVariable Long codeId,
-            @RequestHeader("UserId") String userId, // 헤더로 UserId 받기
-            @RequestBody CodeHistoryDto historyRequest,
-            @RequestParam boolean Correct ) {//정답여부확인,정답=참,오담=거짓
+    @PostMapping("/submit")
+    public ResponseEntity<String> updateHistoryAndSendPoint(@RequestBody CodeHistoryDto historyRequest) {
+        //정답여부확인,정답=참,오담=거짓
+        String userId = historyRequest.getUserId();
+        Long codeId = historyRequest.getCodeId();
+        boolean Correct = historyRequest.getIsCorrect();
 
         Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
 
         if (historyId.isPresent()) {
-            historyRequest.setCodeId(codeId);
-            historyRequest.setUserId(userId);
-            historyRequest.setIsCorrect(Correct);
             codeHistoryService.updateOrAddHistory(historyRequest, userId);
             int point = codeUserService.calculateUserPoint(userId);
             UserPoint userPoint = new UserPoint(userId,point);
