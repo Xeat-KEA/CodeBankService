@@ -77,6 +77,7 @@ public class CodeController {
     public ResponseEntity<?> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
 
             // 히스토리 ID 조회
+            // 어떤 문제에 대한 히스토리가 중복으로 존재하면안됨
             Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
             System.out.println("userid="+userId);
             System.out.println("historyid="+historyId);

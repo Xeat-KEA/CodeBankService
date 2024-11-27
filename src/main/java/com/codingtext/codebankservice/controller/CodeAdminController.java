@@ -69,22 +69,30 @@ public class CodeAdminController {
     @PostMapping("/register/{codeId}")
     public ResponseEntity<String> sendRegisterStatus(@PathVariable Long codeId){
         try {
+            boolean test = codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.CREATED);
+            System.out.println(test);
             //상태가 created인 경우에만 요청을 보내야함 이미 registered인 상태는 건들면안됨(아직안함)
             if (codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.CREATED)) {
                 codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REQUESTED);
-                CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
+                //System.out.println("신청안료");
+                //CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
                 //전송성공
                 //전송성공시 뭘해야 user에게 알릴수있을까?
-                return ResponseEntity.status(HttpStatus.OK).body(null);
+                return ResponseEntity.status(HttpStatus.OK).body("신청되었습니다!");
 
-            } else {
+            } else if(codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REGISTERED)){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 등록 되어있는 문제입니다.");
+            } else if(codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REQUESTED)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 신청한 문제입니다.");
+            }else {
                 //전송실패 or 코드가없음 or 상태변환실패
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null);
+                        .body("등록에 실패했습니다.");
             }
         } catch (Exception e) {
+            e.printStackTrace(); // 예외 상세 정보 출력
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(null);
+                    .body("신청실패: " + e.getMessage()); // 예외 메시지 포함
       }
     }
     //정식등록요청(admin->codebank)->승인됨
@@ -133,7 +141,7 @@ public class CodeAdminController {
     @PutMapping("/register/{codeId}/refused")
     public ResponseEntity<String> refuseRegisterStatus(@PathVariable Long codeId){
         try {
-            if (codeRepository.existsById(codeId)) {
+            if (codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REQUESTED)) {
                 codeRepository.updateRegisterStatusById(codeId, RegisterStatus.CREATED);//승인실패로 requested->created
                 //compileServiceClient.createCompileData(codeId);//어드민에서 컴파일서버에서 테스트케이스 업데이트한경우 적용하기위함
                 return new ResponseEntity<>("승인거부됨", HttpStatus.OK);
