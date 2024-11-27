@@ -1,13 +1,14 @@
 package com.codingtext.codebankservice.Service;
 
-import com.codingtext.codebankservice.Dto.CodeDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.entity.Algorithm;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.Difficulty;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,17 +17,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+//import static jdk.internal.net.http.hpack.QuickHuffman.codes;
 
 
 @Service
+@RequiredArgsConstructor
 public class CodeService {
-    private CodeRepository codeRepository;
-    private CodeHistoryRepository codeHistoryRepository;
-    @Autowired
-    public CodeService(CodeRepository codeRepository, CodeHistoryRepository codeHistoryRepository) {
-        this.codeRepository = codeRepository;
-        this.codeHistoryRepository = codeHistoryRepository;
-    }
+    private final CodeRepository codeRepository;
+    private final CodeHistoryRepository codeHistoryRepository;
+
 
 
     // 문제의 정답률을 계산하는 메서드
@@ -41,6 +40,9 @@ public class CodeService {
         return ((double) correctAttempts / totalAttempts) * 100;
     }
 
+
+
+
     // 필터링 및 정렬된 문제 목록 반환
     public Page<CodeDto> getFilteredAndSearchedCodes(List<String> algorithms,
                                                      List<String> difficulties,
@@ -53,8 +55,12 @@ public class CodeService {
 
         // 각 문제의 정답률을 계산하여 CodeDto로 변환
         List<CodeDto> codeDtos = codes.stream().map(code -> {
+            long correctCount = codeHistoryRepository.countByCode_CodeIdAndIsCorrectTrue(code.getCodeId());
+            double correctRate = calculateCorrectRate(code.getCodeId());
+
             CodeDto codeDto = CodeDto.toDto(code);
-            codeDto.setCorrectRate(calculateCorrectRate(code.getCodeId()));  // 정답률 계산 후 추가
+            codeDto.setCorrectRate(correctRate);
+            codeDto.setCorrectCount(correctCount); // 정답 수 설정
             return codeDto;
         }).collect(Collectors.toList());
 
@@ -67,6 +73,7 @@ public class CodeService {
 
         return new PageImpl<>(codeDtos, pageable, codes.getTotalElements());
     }
+
 
     // 특정 문제 조회 시 정답률 포함
     public CodeDto getCodeById(Long codeId) {
@@ -82,22 +89,11 @@ public class CodeService {
         }
     }
 
-    // GPT 생성 문제 저장
-    public CodeDto createGptGeneratedCode(String title, String content, String algorithm, String difficulty) {
-        Code newCode = Code.builder()
-                .title(title)
-                .content(content)
-                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
-                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
-                .createdAt(LocalDateTime.now())
-                .registerStatus(RegisterStatus.CREATED)
-                .build();
 
-        return CodeDto.toDto(codeRepository.save(newCode));
-    }
     // 문제 삭제 스케줄러
-    //@Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
-    @Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
+    //@Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복
     public void deleteUnusedCreatedCodes() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(24); // 24시간이 지난 걸 확인하기위한 기준
 
@@ -113,6 +109,9 @@ public class CodeService {
             codeRepository.deleteAll(codesToDelete);
             System.out.println("number of deleted problems: " + codesToDelete.size());//log용
         }
+    }
+    public Page<Code> getPendingCodes(Pageable pageable) {
+        return codeRepository.findByRegisterStatus("REQUESTED", pageable);
     }
 
 }

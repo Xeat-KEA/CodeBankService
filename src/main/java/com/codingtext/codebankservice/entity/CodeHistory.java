@@ -15,14 +15,16 @@ public class CodeHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "code_history_id", nullable = false)
     private Long codeHistoryId;
 
     @ManyToOne
     @JoinColumn(name = "code_id", nullable = false)
     private Code code;
 
+    //String으로 바꿀것
     @Column(nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(nullable = false, length = 3000)
     private String writtenCode;
@@ -39,7 +41,7 @@ public class CodeHistory {
     @Column(nullable = false)
     private LocalDateTime compiledAt;
 
-    public CodeHistory(Code code, Long userId, String writtenCode, Boolean isCorrect, Boolean isCreatedByAI, LocalDateTime createdAt, LocalDateTime compiledAt) {
+    public CodeHistory(Code code, String userId, String writtenCode, Boolean isCorrect, Boolean isCreatedByAI, LocalDateTime createdAt, LocalDateTime compiledAt) {
         this.code = code;
         this.userId = userId;
         this.writtenCode = writtenCode;
