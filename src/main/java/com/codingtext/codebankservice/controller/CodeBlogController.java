@@ -34,13 +34,13 @@ public class CodeBlogController {
         // codeId로 Code 객체 조회
         Code code = codeRepository.findById(codeId).orElse(null);
         // CodeHistoryDto 조회
-        CodeHistoryDto codeHistoryDto = codeHistoryService.getCodeHistoryByUserIdAndCode(userId, code);
+        Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCodeId(userId, codeId);
 
         BlogDto blogDto = new BlogDto();
         blogDto.setCodeId(code.getCodeId());
         blogDto.setCodeTitle(code.getTitle());
         blogDto.setContent(code.getContent());
-        blogDto.setWrittenCode(codeHistoryDto.getWrittenCode());
+        blogDto.setWrittenCode(codeHistory.get().getWrittenCode());
 
 
         if (code == null) {
@@ -48,7 +48,7 @@ public class CodeBlogController {
         }
 
         // codeHistoryDto가 null인지 확인하고 상태에 맞는 응답 반환
-        if (codeHistoryDto != null) {
+        if (codeHistory != null) {
             return ResponseEntity.ok(blogDto); // blogDto 반환
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // codeHistoryDto가 없으면 404 반환
