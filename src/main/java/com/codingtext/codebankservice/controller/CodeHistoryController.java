@@ -30,7 +30,7 @@ public class CodeHistoryController {
     private final CodeHistoryService codeHistoryService;
     private final CustomRepository customRepository;
 
-    
+
     //코드히스토리 아이디를 조회하는 기능
     @Operation(summary = "test-코드히스토리 아이디를 조회하는 기능", description = "유저아이디와 코드 아이디를 기반으로 히스토리아이디 조회")
     @GetMapping("id")

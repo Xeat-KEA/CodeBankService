@@ -36,11 +36,16 @@ public class CodeBlogController {
         // CodeHistoryDto 조회
         Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId, codeId);
 
-        BlogDto blogDto = new BlogDto();
-        blogDto.setCodeId(code.getCodeId());
-        blogDto.setCodeTitle(code.getTitle());
-        blogDto.setContent(code.getContent());
-        blogDto.setWrittenCode(codeHistory.get().getWrittenCode());
+
+
+        String formattedContent = code.getTitle() + "\n" + code.getContent();
+
+        // BlogDto 빌더로 생성
+        BlogDto blogDto = BlogDto.builder()
+                .codeId(code.getCodeId())
+                .content(formattedContent)
+                .writtenCode(codeHistory.get().getWrittenCode())
+                .build();
 
 
         if (code == null) {
