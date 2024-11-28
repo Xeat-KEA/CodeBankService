@@ -13,9 +13,10 @@ import java.time.LocalDateTime;
 public class BlogDto {
     //코드 아이디
     private Long codeId;
-    //여기에 코드 제목 + 내용 한번에 넣기
-    //제목 들여쓰기 후 코드 내용넣기
+    //코드 내용
     private String content;
+    //코드 제목
+    private String title;
     //유저가 작성한 코드
     private String writtenCode;
 

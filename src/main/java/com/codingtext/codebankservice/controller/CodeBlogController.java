@@ -37,13 +37,14 @@ public class CodeBlogController {
         Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId, codeId);
 
 
-
-        String formattedContent = code.getTitle() + "\n" + code.getContent();
+        // 제목 + 내용
+        //String formattedContent = code.getTitle() + "\n " + code.getContent();
 
         // BlogDto 빌더로 생성
         BlogDto blogDto = BlogDto.builder()
                 .codeId(code.getCodeId())
-                .content(formattedContent)
+                .title(code.getTitle())
+                .content(code.getContent())
                 .writtenCode(codeHistory.get().getWrittenCode())
                 .build();
 
