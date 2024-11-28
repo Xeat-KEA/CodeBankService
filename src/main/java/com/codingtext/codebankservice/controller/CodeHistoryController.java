@@ -30,6 +30,30 @@ public class CodeHistoryController {
     private final CodeHistoryService codeHistoryService;
     private final CustomRepository customRepository;
 
+
+    @Operation(summary = "코드게시물 상세조회를 위한 api", description = "히스토리를 불러와서 code제목+내용+히스토리작성코드")
+    @GetMapping("/user/{codeId}")
+    public ResponseEntity<CodeHistoryDto> getHistoryWithCodeById(
+            @PathVariable Long codeId, @RequestHeader("UserId") String userId) {
+
+        // codeId로 Code 객체 조회
+        Code code = codeRepository.findById(codeId).orElse(null);
+
+        if (code == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Code가 없으면 404 반환
+        }
+
+        // CodeHistoryDto 조회
+        CodeHistoryDto codeHistoryDto = codeHistoryService.getCodeHistoryByUserIdAndCode(userId, code);
+
+        // codeHistoryDto가 null인지 확인하고 상태에 맞는 응답 반환
+        if (codeHistoryDto != null) {
+            return ResponseEntity.ok(codeHistoryDto); // codeHistoryDto가 존재하면 200 OK와 함께 반환
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // codeHistoryDto가 없으면 404 반환
+        }
+    }
+
     //코드히스토리 아이디를 조회하는 기능
     @Operation(summary = "test-코드히스토리 아이디를 조회하는 기능", description = "유저아이디와 코드 아이디를 기반으로 히스토리아이디 조회")
     @GetMapping("id")
