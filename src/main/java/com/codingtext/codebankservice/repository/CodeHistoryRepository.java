@@ -39,7 +39,8 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     // 특정 문제 ID와 사용자 ID로 풀이 기록 조회
     Optional<CodeHistory> findByCode_CodeIdAndUserId(Long codeId, String userId);
 
-    Optional<CodeHistory> findCodeHistoryByUserIdAndCodeId(String userId, Long codeId);
+    Optional<CodeHistory> findCodeHistoryByUserIdAndCode_CodeId(String userId, Long codeId);
+
     Optional<CodeHistory> findByUserIdAndCode(String userId, Code code);
 
     void deleteAllByCodeNotIn(List<Code> codes);

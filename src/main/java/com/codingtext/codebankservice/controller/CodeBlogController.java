@@ -34,7 +34,7 @@ public class CodeBlogController {
         // codeId로 Code 객체 조회
         Code code = codeRepository.findById(codeId).orElse(null);
         // CodeHistoryDto 조회
-        Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCodeId(userId, codeId);
+        Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId, codeId);
 
         BlogDto blogDto = new BlogDto();
         blogDto.setCodeId(code.getCodeId());
