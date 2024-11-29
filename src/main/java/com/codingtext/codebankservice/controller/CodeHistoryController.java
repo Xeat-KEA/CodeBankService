@@ -1,9 +1,12 @@
 package com.codingtext.codebankservice.controller;
 
+import com.codingtext.codebankservice.Dto.Blog.RegisterRequestDto;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
+import com.codingtext.codebankservice.client.BlogServiceClient;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
+import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import com.codingtext.codebankservice.repository.CustomRepository;
@@ -29,6 +32,7 @@ public class CodeHistoryController {
     private final CodeHistoryRepository codeHistoryRepository;
     private final CodeHistoryService codeHistoryService;
     private final CustomRepository customRepository;
+    private final BlogServiceClient blogServiceClient;
 
 
     //코드히스토리 아이디를 조회하는 기능
@@ -91,6 +95,49 @@ public class CodeHistoryController {
             return ResponseEntity.ok(codeHistoryDto); // codeHistoryDto가 존재하면 200 OK와 함께 반환
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // codeHistoryDto가 없으면 404 반환
+        }
+    }
+    //정식등록요청(codebank->admin)
+    //client가 코드로 요청 -> codebank에서 기존에있던 ai생성문제+testcase admin에게 보냄
+    //created -> REQUESTED 상태로 바꿔주는 역할
+    //유저가 풀었던 문제만 요청 가능
+    @Operation(summary = "히스토리에서 ai로 생성한 문제 정식등록 요청 보내기", description = "ai를 통해 생성한 문제를 정식등록하기위해 문제의 등록상태를 created->REQUESTED로 변환, admin으로 등록요청을 보냄(요청미구현)")
+    @PostMapping("/register/{codeId}")
+    public ResponseEntity<String> sendRegisterStatus(@PathVariable Long codeId,@RequestHeader("UserId") String userId){
+        try {
+            boolean test = codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.CREATED);
+            System.out.println(test);
+            //해당아이디의 코드와 히스토리를 불러온다
+            Code code = codeRepository.findById(codeId).orElse(null);
+            Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId, codeId);
+            //상태가 created인 경우에만 요청을 보내야함 이미 registered인 상태는 건들면안됨
+            //created상태이고 히스토라가 존재할때
+            if (codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.CREATED)&&codeHistoryRepository.existsByUserIdAndCode_CodeId(userId, codeId)) {
+                // 상태를 requested로 바꿈
+                codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REQUESTED);
+                RegisterRequestDto registerRequestDto = RegisterRequestDto.builder()
+                        .userId(codeHistory.get().getUserId())
+                        .title(code.getTitle())
+                        .build();
+                //블로그로 알람을 위한 정보전달
+                blogServiceClient.saveCodeNotice(registerRequestDto);
+                //전송성공
+                //전송성공시 뭘해야 user에게 알릴수있을까?
+                return ResponseEntity.status(HttpStatus.OK).body("신청되었습니다!");
+
+            } else if(codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REGISTERED)){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 등록 되어있는 문제입니다.");
+            } else if(codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REQUESTED)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 신청한 문제입니다.");
+            }else {
+                //전송실패 or 코드가없음 or 상태변환실패
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("등록에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // 예외 상세 정보 출력
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("신청실패: " + e.getMessage()); // 예외 메시지 포함
         }
     }
 

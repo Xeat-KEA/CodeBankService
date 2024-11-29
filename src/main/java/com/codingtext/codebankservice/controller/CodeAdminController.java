@@ -1,12 +1,14 @@
 package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.AdminResponse;
+import com.codingtext.codebankservice.Dto.Blog.RegisterRequestDto;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
 import com.codingtext.codebankservice.Service.CodeAdminService;
 import com.codingtext.codebankservice.Service.CodeLLMService;
 import com.codingtext.codebankservice.Service.CodeService;
+import com.codingtext.codebankservice.client.BlogServiceClient;
 import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeRepository;
@@ -30,6 +32,7 @@ public class CodeAdminController {
     private final CodeAdminService codeAdminService;
     private final CodeRepository codeRepository;
     private final CodeIdWithTestcases codeIdWithTestcases;
+    private final BlogServiceClient blogServiceClient;
 
 
 
@@ -62,40 +65,9 @@ public class CodeAdminController {
         }
     }
 
-    //정식등록요청(codebank->admin)
-    //client가 코드로 요청 -> codebank에서 기존에있던 ai생성문제+testcase admin에게 보냄
-    //created -> REQUESTED 상태로 바꿔주는 역할
-    @Operation(summary = "문제 정식등록 요청 보내기", description = "ai를 통해 생성한 문제를 정식등록하기위해 문제의 등록상태를 created->REQUESTED로 변환, admin으로 등록요청을 보냄(요청미구현)")
-    @PostMapping("/register/{codeId}")
-    public ResponseEntity<String> sendRegisterStatus(@PathVariable Long codeId){
-        try {
-            boolean test = codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.CREATED);
-            System.out.println(test);
-            //상태가 created인 경우에만 요청을 보내야함 이미 registered인 상태는 건들면안됨(아직안함)
-            if (codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.CREATED)) {
-                codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REQUESTED);
-                //System.out.println("신청안료");
-                //CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
-                //전송성공
-                //전송성공시 뭘해야 user에게 알릴수있을까?
-                return ResponseEntity.status(HttpStatus.OK).body("신청되었습니다!");
 
-            } else if(codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REGISTERED)){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 등록 되어있는 문제입니다.");
-            } else if(codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REQUESTED)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 신청한 문제입니다.");
-            }else {
-                //전송실패 or 코드가없음 or 상태변환실패
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("등록에 실패했습니다.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace(); // 예외 상세 정보 출력
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("신청실패: " + e.getMessage()); // 예외 메시지 포함
-      }
-    }
     //정식등록요청(admin->codebank)->승인됨
+    // 블로그 쪽으로 알리기 -> 블로그에서 알림 전송
     @Operation(summary = "문제 정식등록 요청 승인 후 상태 저장", description = "AI를 통해 생성한 문제를 정식 등록하기 위해 보낸 요청의 답을 받아 응답하기")
     @PutMapping("/register/{codeId}/permit")
     public ResponseEntity<String> updateRegisterStatus(
@@ -130,6 +102,7 @@ public class CodeAdminController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }
+        //블로그로 알림전송
 
         return ResponseEntity.ok("문제가 성공적으로 등록되었습니다.");
     }

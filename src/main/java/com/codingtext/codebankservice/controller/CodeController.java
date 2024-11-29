@@ -7,6 +7,7 @@ import com.codingtext.codebankservice.Service.CodeService;
 //import com.codingtext.codebankservice.Util.JwtUtil;
 import com.codingtext.codebankservice.client.BaseResponse;
 import com.codingtext.codebankservice.client.CompileServiceClient;
+import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -72,34 +73,43 @@ public class CodeController {
     //로그인 안 했을때 토큰으로 필터링해서 로그인된 상태가아님->문제만 보여주기 컴파일(가능?,히스토리생성안하기),저장불가,gpt질의 불가
     //로그인 했을때 토큰으로 필터링 로그인->진입과 동시에 히스토리 생성 컴파일,저장버튼,gpt질의 기능 사용시 히스토리 갱신
     //히스토리를 생성한후 컴파일,gpt,저장 아무것도 안하면 스케줄러 돌려서 삭제하기
+    //만약 created면 가져오지 않기
     @Operation(summary = "특정 문제 조회-로그인 유저 전용", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
     public ResponseEntity<?> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
 
             // 히스토리 ID 조회
+            // 히스토리가 없으면 생성
             // 어떤 문제에 대한 히스토리가 중복으로 존재하면안됨
             Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
             System.out.println("userid="+userId);
             System.out.println("historyid="+historyId);
-            if (historyId.isPresent()) {
-                // 히스토리가 있으면 코드 정보 반환
-                CodeDto code = codeService.getCodeById(codeId);
-                System.out.println("sucess historyid="+historyId);
-                //프론트에 historyId도 반환하는가?
-                return ResponseEntity.ok(code);
-            } else if(historyId.isEmpty()){
-                // 히스토리가 없으면 생성 후 코드 정보 반환
-                System.out.println("sucess but no historyid="+historyId);
-                Long newHistoryId = codeHistoryService.createHistory(userId, codeId);
-                CodeDto code = codeService.getCodeById(codeId);
-                return ResponseEntity.ok(code);
-            }
-                //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
-            else {
-                System.out.println("대실패 userid="+userId);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제를 처리하는 동안 오류가 발생했습니다.");
-            }
-
+            CodeDto codeForRegisterStatus = codeService.getCodeById(codeId);
+            RegisterStatus registerStatus = codeForRegisterStatus.getRegisterStatus();
+            // 문제 상태가 created인 문제는 불러오면 안됨
+           if(registerStatus != RegisterStatus.CREATED) {
+               if (historyId.isPresent()) {
+                   // 히스토리가 있으면 코드 정보 반환
+                   CodeDto code = codeService.getCodeById(codeId);
+                   System.out.println("sucess historyid=" + historyId);
+                   //프론트에 historyId도 반환하는가?
+                   return ResponseEntity.ok(code);
+               } else if (historyId.isEmpty()) {
+                   // 히스토리가 없으면 생성 후 코드 정보 반환
+                   System.out.println("sucess but no historyid=" + historyId);
+                   //히스토리 생성후 히스토리아이디 반환
+                   Long newHistoryId = codeHistoryService.createHistory(userId, codeId);
+                   CodeDto code = codeService.getCodeById(codeId);
+                   return ResponseEntity.ok(code);
+               }
+               //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
+               else {
+                   System.out.println("대실패 userid=" + userId);
+                   return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제를 처리하는 동안 오류가 발생했습니다.");
+               }
+           }else{
+               return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("정식등록되지않은 문제입니다.");
+           }
 
     }
 

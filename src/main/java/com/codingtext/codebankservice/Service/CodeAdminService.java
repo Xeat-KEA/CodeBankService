@@ -72,12 +72,12 @@ public class CodeAdminService {
         return new PageImpl<>(codeWithTestcasesList, pageable, pendingCodes.getTotalElements());
     }
     @Transactional
-    public CodeDto createCode(String title, String content, String algorithm, String difficulty) {
+    public CodeDto createCode(String title, String content, Algorithm algorithm, Difficulty difficulty) {
         Code newCode = Code.builder()
                 .title(title)
                 .content(content)
-                .algorithm(Algorithm.valueOf(algorithm.toUpperCase()))
-                .difficulty(Difficulty.valueOf(difficulty.toUpperCase()))
+                .algorithm(algorithm)
+                .difficulty(difficulty)
                 .createdAt(LocalDateTime.now())
                 .registerStatus(RegisterStatus.CREATED)
                 .build();
