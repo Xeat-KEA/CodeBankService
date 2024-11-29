@@ -52,6 +52,7 @@ public class CodeLLMController {
                 throw new IllegalStateException("GPT 응답이 비어 있습니다!");
             }
 
+            System.out.println("gpt:"+gptResponse);
             // 새로운 문제를 DB에 저장
             CodeDto createdCode = codeLLMService.createGptGeneratedCode(
                     gptResponse.getTitle(),
@@ -65,11 +66,13 @@ public class CodeLLMController {
             if (codeId == null) {
                 throw new IllegalStateException("문제 저장 중 오류가 발생했습니다!");
             }
+            System.out.println("codeId:"+codeId);
             //생성된 문제를 바탕으로 히스토리 생성
             Long hisId = codeHistoryService.createHistory(userId, codeId);
             if(hisId == null){
                 throw new IllegalStateException("히스토리 생성 중 오류가 발생했습니다!");
             }
+            System.out.println("hisId:"+hisId);
 
             // TestCaseSpec 리스트 분리
             List<LLMResponseDTO.CodeGenerateResponse.TestCaseSpec> testCases = gptResponse.getTestCases();
@@ -85,9 +88,11 @@ public class CodeLLMController {
                     .testcases(convertedTestCases)
                     .build();
 
+            System.out.println("컴파일 저장중");
             // 컴파일러에게 testcase저장 요청
             //에러분기-저장실패
             compileServiceClient.saveCode(compilerRequest);
+            System.out.println("컴파일 저장성공"+compilerRequest);
             //CodeDto createdCode = codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
             //return ResponseEntity.ok(createdCode);
 
