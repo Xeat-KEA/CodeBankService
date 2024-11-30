@@ -1,6 +1,8 @@
 package com.codingtext.codebankservice.repository;
 
 import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
+import com.codingtext.codebankservice.entity.Algorithm;
+import com.codingtext.codebankservice.entity.Difficulty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.codingtext.codebankservice.entity.Code;

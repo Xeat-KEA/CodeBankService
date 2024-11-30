@@ -1,9 +1,7 @@
 package com.codingtext.codebankservice.Service;
 
 import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
-import com.codingtext.codebankservice.entity.Code;
-import com.codingtext.codebankservice.entity.CodeHistory;
-import com.codingtext.codebankservice.entity.RegisterStatus;
+import com.codingtext.codebankservice.entity.*;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import com.codingtext.codebankservice.repository.CustomRepository;
@@ -93,7 +91,8 @@ public class CodeHistoryService {
                 .compiledAt(history.getCompiledAt())
                 .build());
     }*/
-    public Page<CodeHistoryDto> getFilteredUserHistories(String userId,
+    public Page<CodeHistoryDto>
+    getFilteredUserHistories(String userId,
                                                       List<String> algorithms,
                                                       List<String> difficulties,
                                                       String searchBy,
