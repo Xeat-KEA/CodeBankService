@@ -45,8 +45,8 @@ public class CodeController {
     //전체문제조회+페이지처리
     @Operation(summary = "전체 문제 조회", description = "알고리즘, 난이도, 검색, 정렬을 적용하여 전체 문제를 조회")
     @GetMapping("/lists")
-    public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) List<String> algorithm,
-                                                     @RequestParam(required = false) List<String> difficulty,
+    public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) List<String> algorithms,
+                                                     @RequestParam(required = false) List<String> difficulties,
                                                      @RequestParam(required = false) String searchBy,  // 검색 기준 (예: title, codeId)
                                                      @RequestParam(required = false) String searchText, // 검색어
                                                      @RequestParam(required = false) String sortBy,     // 정렬 기준 (예: createdAt, correctRate)
@@ -58,13 +58,13 @@ public class CodeController {
 
        // return ResponseEntity.ok(codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable));
         try {
-            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable);
+            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy, pageable);
             return ResponseEntity.ok(codes);
         } catch (Exception e) {
 //            Page<CodeDto> emptyPage = Page.empty();
 //            System.out.println("뭔가잘못됨");
 //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyPage);
-            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable);
+            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy, pageable);
             return ResponseEntity.ok(codes);
         }
     }

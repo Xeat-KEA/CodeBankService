@@ -33,16 +33,40 @@ public class CustomRepositoryImpl implements CustomRepository {
         BooleanBuilder builder = new BooleanBuilder();
 
         // 알고리즘 필터 추가
+//        if (algorithms != null && !algorithms.isEmpty()) {
+//            builder.and(code.algorithm.in(algorithms.stream()
+//                    .map(Algorithm::valueOf)
+//                    .collect(Collectors.toList())));
+//        }
         if (algorithms != null && !algorithms.isEmpty()) {
             builder.and(code.algorithm.in(algorithms.stream()
-                    .map(Algorithm::valueOf)
+                    .map(algo -> {
+                        try {
+                            return Algorithm.valueOf(algo.trim().toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList())));
         }
 
         // 난이도 필터 추가
+//        if (difficulties != null && !difficulties.isEmpty()) {
+//            builder.and(code.difficulty.in(difficulties.stream()
+//                    .map(Difficulty::valueOf)
+//                    .collect(Collectors.toList())));
+//        }
         if (difficulties != null && !difficulties.isEmpty()) {
             builder.and(code.difficulty.in(difficulties.stream()
-                    .map(Difficulty::valueOf)
+                    .map(diff -> {
+                        try {
+                            return Difficulty.valueOf(diff.trim().toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList())));
         }
 
@@ -59,6 +83,9 @@ public class CustomRepositoryImpl implements CustomRepository {
                 }
             }
         }
+        System.out.println("Filters: " + builder.getValue());
+        System.out.println("Offset: " + pageable.getOffset());
+        System.out.println("Page size: " + pageable.getPageSize());
 
         // 동적 정렬 조건 생성
         OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortBy, code);
@@ -74,6 +101,8 @@ public class CustomRepositoryImpl implements CustomRepository {
                 .from(code)
                 .where(builder)
                 .fetchOne();
+        System.out.println("Results: " + results);
+        System.out.println("Total count: " + total);
 
         return new PageImpl<>(results, pageable, total);
     }
@@ -175,7 +204,7 @@ public class CustomRepositoryImpl implements CustomRepository {
         return new PageImpl<>(dtoResults, pageable, total);
     }
     // QCodeHistory에 대한 정렬
-    private OrderSpecifier<?> getOrderSpecifier(QCodeHistory history) {
+    private OrderSpecifier<?> getOrderSpecifierh(QCodeHistory history) {
         // 기본적으로 생성일 내림차순 정렬
         return history.createdAt.desc();
     }
