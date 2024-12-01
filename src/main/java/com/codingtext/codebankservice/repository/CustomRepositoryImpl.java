@@ -178,7 +178,7 @@ public class CustomRepositoryImpl implements CustomRepository {
         }
 
         // 동적 정렬 조건
-        OrderSpecifier<?> orderSpecifier = getOrderSpecifier(history);
+        OrderSpecifier<?> orderSpecifier = getOrderSpecifierh(history);
 
         // 쿼리 실행
         List<CodeHistory> results = queryFactory.selectFrom(history)
