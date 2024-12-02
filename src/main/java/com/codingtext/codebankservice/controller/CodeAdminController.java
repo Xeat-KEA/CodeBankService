@@ -5,11 +5,15 @@ import com.codingtext.codebankservice.Dto.Blog.RegisterRequestDto;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
+import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcasesAndNickName;
+import com.codingtext.codebankservice.Dto.User.UserInfoDto;
 import com.codingtext.codebankservice.Service.CodeAdminService;
+import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeLLMService;
 import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.BlogServiceClient;
 import com.codingtext.codebankservice.client.CompileServiceClient;
+import com.codingtext.codebankservice.client.UserServiceClient;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +37,8 @@ public class CodeAdminController {
     private final CodeRepository codeRepository;
     private final CodeIdWithTestcases codeIdWithTestcases;
     private final BlogServiceClient blogServiceClient;
+    private final CodeHistoryService codeHistoryService;
+    private final UserServiceClient userServiceClient;
 
 
 
@@ -55,11 +61,25 @@ public class CodeAdminController {
     //문제를 testacse와함께 제공
     @Operation(summary = "승인 대기중인 문제 조회", description = "승인 대기중인 문제의 정보를 조회")
     @GetMapping("/register/pendinglists/{codeId}")
-    public ResponseEntity<CodeWithTestcases> getPendingApprovalCodesWithTestcases(@PathVariable Long codeId) {
+    public ResponseEntity<CodeWithTestcasesAndNickName> getPendingApprovalCodesWithTestcases(@PathVariable Long codeId) {
+        //해당 코드아이디를 히스토리로 가진건 생성자밖에없음
+        //히스토리가 유니크함->코드아이디로 히스토리 아이디를 찾아서 userId를 찾고 userId를 통해 user-service에서 닉네임을 보내주면됨
+        Long historyId = codeHistoryService.getAiHistoryId(codeId);
+        String userId = codeHistoryService.getUserId(historyId);
+        System.out.println("히스토리아이디,유저아이디="+historyId+","+userId);
         try {
+            ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
+            String nickname = userInfo.getBody().getUserId();
+
             // 서비스 호출로 승인 대기중인 문제 조회
             CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
-            return ResponseEntity.ok(codeWithTestcases);
+            CodeWithTestcasesAndNickName codeWithTestcasesAndNickName = CodeWithTestcasesAndNickName.builder()
+                    .nickName(nickname)
+                    .codeWithTestcases(codeWithTestcases)
+                    .build();
+
+            System.out.println("닉네임="+nickname);
+            return ResponseEntity.ok(codeWithTestcasesAndNickName);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

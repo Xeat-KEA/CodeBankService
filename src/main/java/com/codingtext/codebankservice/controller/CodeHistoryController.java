@@ -121,6 +121,7 @@ public class CodeHistoryController {
                 blogServiceClient.saveCodeNotice(registerRequestDto);
                 //전송성공
                 //전송성공시 뭘해야 user에게 알릴수있을까?
+                //전송할때 유저 아이디 동봉해서 보내기x 상세코드를 열람할때 userid를 찾아서 보내기
                 return ResponseEntity.status(HttpStatus.OK).body("신청되었습니다!");
 
             } else if(codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REGISTERED)){
