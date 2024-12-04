@@ -89,6 +89,11 @@ public class CodeService {
         }
     }
 
+    public Page<Code> getRegisteredCode(RegisterStatus registerStatus,Pageable pageable){
+        return codeRepository.findCodeByRegisterStatus(registerStatus,pageable);
+    }
+
+
 
     // 문제 삭제 스케줄러
     @Transactional

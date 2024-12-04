@@ -14,16 +14,22 @@ import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.BlogServiceClient;
 import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.client.UserServiceClient;
+import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeRepository;
+import com.sun.source.tree.IntersectionTypeTree;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @Tag(name = "Code register API", description = "코딩 테스트 문제를 관리하는 API")
 @RestController
@@ -59,6 +65,8 @@ public class CodeAdminController {
     }
     //요청된 문제 확인
     //문제를 testacse와함께 제공
+    //문제를 건의한 건의자의 이름을 관리자에게 함꼐전달
+    //문제 등록 table을 따로 만들지않음 이유?->병목현상=로드밸런싱,복잡도다운
     @Operation(summary = "승인 대기중인 문제 조회", description = "승인 대기중인 문제의 정보를 조회")
     @GetMapping("/register/pendinglists/{codeId}")
     public ResponseEntity<CodeWithTestcasesAndNickName> getPendingApprovalCodesWithTestcases(@PathVariable Long codeId) {
@@ -88,6 +96,7 @@ public class CodeAdminController {
 
     //정식등록요청(admin->codebank)->승인됨
     // 블로그 쪽으로 알리기 -> 블로그에서 알림 전송
+    // 수정된 내용 코드에 반영하기 상태뿐만아니라 코드 내용까지 수정할수있어야함
     @Operation(summary = "문제 정식등록 요청 승인 후 상태 저장", description = "AI를 통해 생성한 문제를 정식 등록하기 위해 보낸 요청의 답을 받아 응답하기")
     @PutMapping("/register/{codeId}/permit")
     public ResponseEntity<String> updateRegisterStatus(
@@ -146,9 +155,108 @@ public class CodeAdminController {
         }
     }
 
+
+
+    //admin 문제 관리를 위한 문제조회(정식등록된문제들만)
+    @Operation(summary = "admin 전체 문제 관리(정식등록된문제들만)", description = "admin이 문제를 조회할수있다")
+    @GetMapping("/codeLists")
+    public ResponseEntity<Page<Code>> getAllCodes(@PageableDefault(page = 0, size = 10) Pageable pageable) {
+
+        try {
+            Page<Code> codes = codeService.getRegisteredCode(RegisterStatus.REGISTERED,pageable);
+            return ResponseEntity.ok(codes);
+        } catch (Exception e) {
+            System.out.println("empty code?");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+    @Operation(summary = "전체문제중 일부 문제 상세조회", description = "전체 문제중 특정 문제를 상세 조회할수있다")
+    @GetMapping("/codeLists/{codeId}")
+    public ResponseEntity<CodeWithTestcases> getCodesWithTestcases(@PathVariable Long codeId) {
+
+        CodeDto codeFor = codeService.getCodeById(codeId);
+        RegisterStatus registerStatus = codeFor.getRegisterStatus();
+        // 문제 상태가 created인 문제는 불러오면 안됨
+        if(registerStatus != RegisterStatus.CREATED) {
+            if (codeFor!=null) {
+                CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
+                System.out.println("success codeid=" + codeId);
+
+                return ResponseEntity.ok(codeWithTestcases);
+
+            } else if (codeFor == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            else {
+                System.out.println("대실패 codeid=" + codeId);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+        }else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+
+    //admin 문제 추가
+    //admin이 생성한 문제를 받아옴 저장해야함 기존 codeid가 없음,어떻게 testcase를 컴파일서버로 보냄?
+    //상태도 바꿔야함 수정하도록
+    @Operation(summary = "admin문제추가-testcase별도 코드만 생성및저장", description = "admin이 문제 생성및 추가 요청")
+    @PostMapping("/add")
+    public ResponseEntity<CodeWithTestcases> createCodeByAdmin(@RequestBody CodeWithTestcases codeWithTestcases){
+
+        try {
+            //받은 문제를 저장하고 생성된 문제의 코드아이디 받아오기
+            Integer newCodeId = codeAdminService.createCode(codeWithTestcases).intValue();
+
+            //테스트케이스 분리후 코드아이디로 컴파일서버에 추가요청
+            codeAdminService.saveTestcase(codeWithTestcases,newCodeId);
+
+            return ResponseEntity.ok(codeWithTestcases);
+        } catch (Exception e) {
+            CodeWithTestcases emptyCode = new CodeWithTestcases(null,null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
+        }
+    }
+
+    //admin 문제 수정
+    @Operation(summary = "문제 수정", description = "문제+테스트케이스를 불러오고 내용을 수정할수있다")
+    @PutMapping("/edit/{codeId}")
+    public ResponseEntity<String> updateCode(
+            @PathVariable Long codeId,
+            @RequestBody CodeWithTestcases codeWithTestcases) {
+
+
+
+        // 테스트케이스를 컴파일 서비스로 전송
+        try {
+            //compileServiceClient.updateTestcases(codeId, adminResponse.getTestcases());
+            //adminResponse.getTestcases()를 codeIdwithTestcase에 넣어 compile서비스에 전송
+            Integer id = codeWithTestcases.getCode().getCodeId().intValue();
+            // AdminResponse에서 데이터를 추출하여 CodeIdWithTestcases에 매핑
+            codeAdminService.saveTestcase(codeWithTestcases,id);
+
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("테스트케이스 전송 실패");
+        }
+
+        // 데이터베이스 상태 업데이트
+        try {
+            codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REGISTERED);
+            codeRepository.updateCodeData(codeId, codeWithTestcases.getCode().getContent(), codeWithTestcases.getCode().getTitle());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
+        }
+
+        return ResponseEntity.ok("문제가 성공적으로 수정되었습니다.");
+    }
+
+
+    //admin문제삭제
     //특정문제삭제
+    //문제를 삭제할려면 히스토리를 전부 삭제하고 문제를 삭제해야함
     //id를 참조하여 문제를 삭제 그리고 id를 컴파일서버에보내서 id를 참조하는 testcase를 삭제요청
-    @Operation(summary = "문제삭제+testcase삭제요청", description = "특정 codeId를 가진 문제를 삭제하고 해당 codeId를 참조하는 testcase를 삭제하는 요청을 compileservice로 보냄")
+    @Operation(summary = "문제삭제+testcase삭제요청-히스토리 삭제가 선행되어야함", description = "특정 codeId를 가진 문제를 삭제하고 해당 codeId를 참조하는 testcase를 삭제하는 요청을 compileservice로 보냄")
     @DeleteMapping("/delete/{codeId}")
     public ResponseEntity<String> deleteCode(@PathVariable Long codeId) {
         try {
@@ -165,21 +273,6 @@ public class CodeAdminController {
             }
         } catch (Exception e) {
             return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
-        }
-    }
-    //admin 문제 추가
-    //admin이 생성한 문제를 받아옴 저장해야함 기존 codeid가 없음,어떻게 testcase를 컴파일서버로 보냄?
-    //상태도 바꿔야함 수정하도록
-    @Operation(summary = "admin문제추가-testcase별도 코드만 생성및저장", description = "admin이 문제 생성및 추가 요청")
-    @PostMapping("/add")
-    public ResponseEntity<CodeDto> createCodeByAdmin(@RequestBody CodeDto codedto){
-
-        try {
-            CodeDto createdCode = codeAdminService.createCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
-            return ResponseEntity.ok(createdCode);
-        } catch (Exception e) {
-            CodeDto emptyCode = new CodeDto();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
         }
     }
 

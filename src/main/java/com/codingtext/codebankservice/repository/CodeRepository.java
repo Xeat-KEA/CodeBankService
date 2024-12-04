@@ -20,6 +20,8 @@ import java.util.List;
 @Repository
 public interface CodeRepository extends JpaRepository<Code, Long>, CustomRepository {
     Page<Code> findAll(Pageable pageble);
+    Page<Code> findCodeByRegisterStatus(RegisterStatus registerStatus,Pageable pageable);
+
     List<Code> findByRegisterStatusAndCreatedAtBefore(RegisterStatus registerStatus, LocalDateTime dateTime);
     List<Code> findAll();
     @Transactional

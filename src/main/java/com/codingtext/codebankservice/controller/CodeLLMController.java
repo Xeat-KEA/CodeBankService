@@ -79,7 +79,10 @@ public class CodeLLMController {
 
             // TestCaseSpec 변환 (LLM -> Compile DTO)
             List<Testcase> convertedTestCases = testCases.stream()
-                    .map(testCaseSpec -> new Testcase(testCaseSpec.getInput(), testCaseSpec.getOutput()))
+                    .map(testCaseSpec -> new Testcase(
+                            List.of(testCaseSpec.getInput()),  // String -> List<String>
+                            List.of(testCaseSpec.getOutput()) // String -> List<String>
+                    ))
                     .toList();
 
             // 컴파일러 서비스로 보낼 testcase 분라

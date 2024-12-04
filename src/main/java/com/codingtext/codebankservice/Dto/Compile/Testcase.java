@@ -1,14 +1,17 @@
 package com.codingtext.codebankservice.Dto.Compile;
 
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
+@Builder
 public class Testcase {
-    private String input;
-    private String output;
+    private List<String> input;
+    private List<String> output;
 }
 

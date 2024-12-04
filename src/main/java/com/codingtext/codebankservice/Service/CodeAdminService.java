@@ -14,9 +14,11 @@ import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.client.params.ClientPNames;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -84,6 +86,34 @@ public class CodeAdminService {
 
         return CodeDto.toDto(codeRepository.save(newCode));
     }
+    public Long createCode(CodeWithTestcases codeWithTestcases){
+        Code newCode = Code.builder()
+                .title(codeWithTestcases.getCode().getTitle())
+                .content(codeWithTestcases.getCode().getContent())
+                .algorithm(codeWithTestcases.getCode().getAlgorithm())
+                .difficulty(codeWithTestcases.getCode().getDifficulty())
+                .createdAt(LocalDateTime.now())
+                .registerStatus(RegisterStatus.REGISTERED)
+                .build();
+        codeRepository.save(newCode);
+        System.out.println("newCodeId= "+newCode.getCodeId());
+        return newCode.getCodeId();
+    }
+
+    //코드와 테스트케이스를 분리해서 테스트케이스를 컴파일서버로 보내는 코드
+    public ResponseEntity<?> saveTestcase(CodeWithTestcases codeWithTestcases, Integer id) {
+        // Testcase 객체 생성
+        CodeIdWithTestcases codeIdWithTestcase = new CodeIdWithTestcases();
+        codeIdWithTestcase.setId(id);
+        codeIdWithTestcase.setTestcases(codeWithTestcases.getTestcases());
+
+        // 컴파일 서버로 요청 보내기
+        compileServiceClient.saveCode(codeIdWithTestcase);
+
+        return ResponseEntity.ok("저장성공");
+    }
+
+
 //    @Transactional
 //    public boolean updateCodeWithStatus(Long codeId, String codeContent, String title, String status) {
 //        try {
