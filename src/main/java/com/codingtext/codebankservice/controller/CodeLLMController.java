@@ -80,12 +80,12 @@ public class CodeLLMController {
             // TestCaseSpec 변환 (LLM -> Compile DTO)
             List<Testcase> convertedTestCases = testCases.stream()
                     .map(testCaseSpec -> new Testcase(
-                            List.of(testCaseSpec.getInput()),  // String -> List<String>
-                            List.of(testCaseSpec.getOutput()) // String -> List<String>
+                            testCaseSpec.getInput(),  // String 그대로 사용
+                            testCaseSpec.getOutput() // String 그대로 사용
                     ))
                     .toList();
 
-            // 컴파일러 서비스로 보낼 testcase 분라
+            // 컴파일러 서비스로 보낼 데이터 생성
             CodeIdWithTestcases compilerRequest = CodeIdWithTestcases.builder()
                     .id(Math.toIntExact(codeId))
                     .testcases(convertedTestCases)

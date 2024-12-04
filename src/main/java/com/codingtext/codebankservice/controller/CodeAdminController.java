@@ -160,7 +160,7 @@ public class CodeAdminController {
     //admin 문제 관리를 위한 문제조회(정식등록된문제들만)
     @Operation(summary = "admin 전체 문제 관리(정식등록된문제들만)", description = "admin이 문제를 조회할수있다")
     @GetMapping("/codeLists")
-    public ResponseEntity<Page<Code>> getAllCodes(@PageableDefault(page = 0, size = 10) Pageable pageable) {
+    public ResponseEntity<Page<Code>> getAllCodes(@PageableDefault(page = 0, size = 20) Pageable pageable) {
 
         try {
             Page<Code> codes = codeService.getRegisteredCode(RegisterStatus.REGISTERED,pageable);

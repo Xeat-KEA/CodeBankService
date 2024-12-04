@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @Builder
 public class Testcase {
-    private List<String> input;
-    private List<String> output;
+    private String input;
+    private String output;
 }
 
