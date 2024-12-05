@@ -11,7 +11,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class UserInfoDto {
+    String userId;
     String nickName;
-
+    String profileUrl;
+    String profileMessage;
+    String codeLanguage;
+    String tier;
+    Long blogId;
 
 }
