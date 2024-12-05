@@ -15,8 +15,6 @@ public class UserInfoDto {
     String nickName;
     String profileUrl;
     String profileMessage;
-    String codeLanguage;
     String tier;
-    Long blogId;
 
 }
