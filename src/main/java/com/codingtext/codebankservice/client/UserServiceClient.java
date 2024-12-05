@@ -14,7 +14,7 @@ public interface UserServiceClient {
     @PutMapping("/score")
     ResponseEntity<?> updateScore(@RequestBody UserPoint userPoint);
 
-    @GetMapping("users/userInfo")
+    @GetMapping("/users/userInfo")
     ResponseEntity<UserInfoDto> getUserInfo(String userId);
 
 }
