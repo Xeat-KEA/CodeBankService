@@ -75,7 +75,7 @@ public class CodeAdminController {
         Long historyId = codeHistoryService.getAiHistoryId(codeId);
         String userId = codeHistoryService.getUserId(historyId);
         System.out.println("히스토리아이디,유저아이디="+historyId+","+userId);
-        try {
+        //try {
             ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
 
             String nickname = userInfo.getBody().getNickName();
@@ -90,9 +90,9 @@ public class CodeAdminController {
 
             System.out.println("닉네임="+nickname);
             return ResponseEntity.ok(codeWithTestcasesAndNickName);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+//        }
     }
 
 
