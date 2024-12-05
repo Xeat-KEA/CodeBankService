@@ -40,7 +40,7 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     Optional<CodeHistory> findByCode_CodeIdAndUserId(Long codeId, String userId);
 
     Optional<CodeHistory> findCodeHistoryByUserIdAndCode_CodeId(String userId, Long codeId);
-    Long findCodeHistoryByCode_CodeId(Long codeId);
+    Long findCodeHistoryIdByCode_CodeId(Long codeId);
 
     String findUserIdByCodeHistoryId(Long codeHistoryId);
 
