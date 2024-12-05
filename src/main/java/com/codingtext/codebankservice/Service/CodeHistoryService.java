@@ -44,7 +44,7 @@ public class CodeHistoryService {
         return codeHistoryRepository.findCodeHistoryIdByUserIdAndCodeId(userId, codeId);
     }
     public Long getAiHistoryId(Long codeId){
-        return codeHistoryRepository.findCodeHistoryIdByCode_CodeId(codeId);
+        return codeHistoryRepository.findCodeHistoryIdByCodeId(codeId);
     }
     //ai생성문제등 해당 코드아이디에대해 히스토리가 유니크할때만 사용
     public String getUserId(Long HistoryId){
