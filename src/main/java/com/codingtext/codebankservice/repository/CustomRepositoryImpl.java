@@ -39,6 +39,9 @@ public class CustomRepositoryImpl implements CustomRepository {
 //                    .map(Algorithm::valueOf)
 //                    .collect(Collectors.toList())));
 //        }
+        if(registerStatus == null){
+            registerStatus = RegisterStatus.REGISTERED;
+        }
 
         if (algorithms != null && !algorithms.isEmpty()) {
             builder.and(code.algorithm.in(algorithms.stream()
