@@ -26,7 +26,7 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     @Query("SELECT DISTINCT c.code.difficulty FROM CodeHistory c WHERE c.userId = :userId AND c.isCorrect = true")
     List<Difficulty> findDistinctCodeDifficultyByUserIdAndIsCorrectTrue(String userId);
 
-
+    void deleteByCodeId(Long codeId);
 
     //특정 유저의 정답횟수
     int countCodeHistoriesByUserIdAndIsCorrectTrue(String userId);

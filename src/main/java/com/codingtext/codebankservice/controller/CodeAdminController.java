@@ -16,6 +16,7 @@ import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.client.UserServiceClient;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.RegisterStatus;
+import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
 import com.sun.source.tree.IntersectionTypeTree;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,6 +47,7 @@ public class CodeAdminController {
     private final BlogServiceClient blogServiceClient;
     private final CodeHistoryService codeHistoryService;
     private final UserServiceClient userServiceClient;
+    private final CodeHistoryRepository codeHistoryRepository;
 
 
 
@@ -280,21 +282,38 @@ public class CodeAdminController {
     @DeleteMapping("/delete/{codeId}")
     public ResponseEntity<String> deleteCode(@PathVariable Long codeId) {
         try {
-            if (codeRepository.existsById(codeId)) {
-                codeRepository.deleteById(codeId);
-                //feignclient는 주고받는 함수의 매핑되는 이름이 다르거나 타입이 다르면 전달이 되지않음
-                //Long codeid -> Integer id로 변환해야 가능
-                //특히 json의 경우 이름이 다르면 매핑시키지못함
-                Integer id = codeId.intValue();
-                compileServiceClient.removeCode(id);
-                return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
-            } else {
+            if (!codeRepository.existsById(codeId)) {
                 return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
             }
+
+            // 1. code_history에서 해당 codeId를 참조하는 모든 데이터 삭제
+            try {
+                codeHistoryRepository.deleteByCodeId(codeId);
+            } catch (Exception e) {
+                return new ResponseEntity<>("히스토리 삭제 중 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            // 2. code 테이블에서 데이터 삭제
+            try {
+                codeRepository.deleteById(codeId);
+            } catch (Exception e) {
+                return new ResponseEntity<>("문제 삭제 중 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            // 3. compileService로 testcase 삭제 요청
+            try {
+                Integer id = codeId.intValue();
+                compileServiceClient.removeCode(id);
+            } catch (Exception e) {
+                return new ResponseEntity<>("테스트케이스 삭제 요청 중 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            return new ResponseEntity<>("삭제 성공", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("문제 삭제 중 오류 발생", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("문제 삭제 처리 중 예상치 못한 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
 
