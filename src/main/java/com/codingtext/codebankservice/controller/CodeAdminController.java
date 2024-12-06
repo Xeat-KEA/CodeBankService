@@ -288,7 +288,7 @@ public class CodeAdminController {
 
             // 1. code_history에서 해당 codeId를 참조하는 모든 데이터 삭제
             try {
-                codeHistoryRepository.deleteByCodeId(codeId);
+                codeHistoryRepository.deleteAllByCodeId(codeId);
             } catch (Exception e) {
                 return new ResponseEntity<>("히스토리 삭제 중 오류 발생: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }

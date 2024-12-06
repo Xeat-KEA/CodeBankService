@@ -4,9 +4,11 @@ import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.entity.Difficulty;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,7 +28,11 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     @Query("SELECT DISTINCT c.code.difficulty FROM CodeHistory c WHERE c.userId = :userId AND c.isCorrect = true")
     List<Difficulty> findDistinctCodeDifficultyByUserIdAndIsCorrectTrue(String userId);
 
-    void deleteByCodeId(Long codeId);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM CodeHistory ch WHERE ch.code.codeId = :codeId")
+    void deleteAllByCodeId(@Param("codeId") Long codeId);
 
     //특정 유저의 정답횟수
     int countCodeHistoriesByUserIdAndIsCorrectTrue(String userId);
