@@ -6,6 +6,7 @@ import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
 import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcasesAndNickName;
+import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcasesForEdit;
 import com.codingtext.codebankservice.Dto.User.UserInfoDto;
 import com.codingtext.codebankservice.Service.CodeAdminService;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
@@ -116,10 +117,10 @@ public class CodeAdminController {
     @PutMapping("/register/{codeId}/permit")
     public ResponseEntity<String> updateRegisterStatus(
             @PathVariable Long codeId,
-            @RequestBody AdminResponse adminResponse) {
+            @RequestBody CodeWithTestcasesForEdit codeWithTestcasesForEdit) {
 
         // 어드민 서비스 응답 데이터 검증
-        if (adminResponse == null || adminResponse.getTestcases() == null || adminResponse.getCodeContent() == null) {
+        if (codeWithTestcasesForEdit == null || codeWithTestcasesForEdit.getTestcases() == null || codeWithTestcasesForEdit.getContent() == null) {
             return ResponseEntity.badRequest().body("유효하지 않은 어드민 서비스 응답입니다.");
         }
 
@@ -127,11 +128,11 @@ public class CodeAdminController {
         try {
             //compileServiceClient.updateTestcases(codeId, adminResponse.getTestcases());
             //adminResponse.getTestcases()를 codeIdwithTestcase에 넣어 compile서비스에 전송
-            Integer id = adminResponse.getCodeId().intValue();
+            Integer id = codeWithTestcasesForEdit.getCodeId().intValue();
             // AdminResponse에서 데이터를 추출하여 CodeIdWithTestcases에 매핑
             CodeIdWithTestcases codeIdWithTestcase = new CodeIdWithTestcases();
             codeIdWithTestcase.setId(id);
-            codeIdWithTestcase.setTestcases(adminResponse.getTestcases());
+            codeIdWithTestcase.setTestcases(codeWithTestcasesForEdit.getTestcases());
 
             compileServiceClient.saveCode(codeIdWithTestcase);
 
@@ -142,7 +143,8 @@ public class CodeAdminController {
         // 데이터베이스 상태 업데이트
         try {
             codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REGISTERED);
-            codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
+            //codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
+            codeAdminService.updateCode(codeId,codeWithTestcasesForEdit.getTitle(),codeWithTestcasesForEdit.getContent(),codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }
@@ -244,7 +246,7 @@ public class CodeAdminController {
     @PutMapping("/edit/{codeId}")
     public ResponseEntity<String> updateCode(
             @PathVariable Long codeId,
-            @RequestBody CodeWithTestcases codeWithTestcases) {
+            @RequestBody CodeWithTestcasesForEdit codeWithTestcasesForEdit) {
 
 
 
@@ -252,9 +254,9 @@ public class CodeAdminController {
         try {
             //compileServiceClient.updateTestcases(codeId, adminResponse.getTestcases());
             //adminResponse.getTestcases()를 codeIdwithTestcase에 넣어 compile서비스에 전송
-            Integer id = codeWithTestcases.getCode().getCodeId().intValue();
+            Integer id = codeWithTestcasesForEdit.getCodeId().intValue();
             // AdminResponse에서 데이터를 추출하여 CodeIdWithTestcases에 매핑
-            codeAdminService.saveTestcase(codeWithTestcases,id);
+            codeAdminService.saveTestcaseForEdit(codeWithTestcasesForEdit,id);
 
 
         } catch (Exception e) {
@@ -263,9 +265,10 @@ public class CodeAdminController {
 
         // 데이터베이스 상태 업데이트
         try {
-            codeRepository.updateRegisterStatusById(codeId, codeWithTestcases.getCode().getRegisterStatus());
+            //정식등록된 문제만 edit하기때문에 상태는 변화시킬필요없음
+            //codeRepository.updateRegisterStatusById(codeId, codeWithTestcasesForEdit.getRegisterStatus());
             //codeRepository.updateCodeData(codeId, codeWithTestcases.getCode().getContent(), codeWithTestcases.getCode().getTitle());
-            codeAdminService.updateCode(codeId,codeWithTestcases.getCode().getTitle(),codeWithTestcases.getCode().getContent());
+            codeAdminService.updateCode(codeId,codeWithTestcasesForEdit.getTitle(),codeWithTestcasesForEdit.getContent(),codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }

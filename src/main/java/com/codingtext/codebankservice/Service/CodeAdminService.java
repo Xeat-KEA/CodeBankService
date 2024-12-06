@@ -1,10 +1,7 @@
 package com.codingtext.codebankservice.Service;
 
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
-import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
-import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
-import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcasesAndNickName;
-import com.codingtext.codebankservice.Dto.Compile.Testcase;
+import com.codingtext.codebankservice.Dto.Compile.*;
 import com.codingtext.codebankservice.Dto.User.UserInfoDto;
 import com.codingtext.codebankservice.client.BaseResponse;
 import com.codingtext.codebankservice.client.CompileServiceClient;
@@ -90,7 +87,7 @@ public class CodeAdminService {
         return new PageImpl<>(codeWithTestcasesList, pageable, pendingCodes.getTotalElements());
     }
     @Transactional
-    public ResponseEntity<?> updateCode(Long codeId, String title, String content) {
+    public ResponseEntity<?> updateCode(Long codeId, String title, String content,Algorithm algorithm,Difficulty difficulty) {
         Optional<Code> optionalCode = codeRepository.findById(codeId);
 
         if (optionalCode.isEmpty()) {
@@ -100,6 +97,8 @@ public class CodeAdminService {
         Code code = optionalCode.get();
         code.setTitle(title);
         code.setContent(content);
+        code.setAlgorithm(algorithm);
+        code.setDifficulty(difficulty);
 
         // 변경 내용을 강제로 병합
         codeRepository.save(code);
@@ -127,6 +126,17 @@ public class CodeAdminService {
         CodeIdWithTestcases codeIdWithTestcase = new CodeIdWithTestcases();
         codeIdWithTestcase.setId(id);
         codeIdWithTestcase.setTestcases(codeWithTestcases.getTestcases());
+
+        // 컴파일 서버로 요청 보내기
+        compileServiceClient.saveCode(codeIdWithTestcase);
+
+        return ResponseEntity.ok("저장성공");
+    }
+    public ResponseEntity<?> saveTestcaseForEdit(CodeWithTestcasesForEdit codeWithTestcasesForEdit, Integer id) {
+        // Testcase 객체 생성
+        CodeIdWithTestcases codeIdWithTestcase = new CodeIdWithTestcases();
+        codeIdWithTestcase.setId(id);
+        codeIdWithTestcase.setTestcases(codeWithTestcasesForEdit.getTestcases());
 
         // 컴파일 서버로 요청 보내기
         compileServiceClient.saveCode(codeIdWithTestcase);

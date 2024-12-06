@@ -14,5 +14,6 @@ public class AdminResponse {
     private Long codeId;
     private String title;
     private String codeContent;
+
     private List<Testcase> testcases;
 }
