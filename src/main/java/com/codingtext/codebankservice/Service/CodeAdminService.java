@@ -21,11 +21,13 @@ import org.apache.http.client.params.ClientPNames;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,18 +90,23 @@ public class CodeAdminService {
         return new PageImpl<>(codeWithTestcasesList, pageable, pendingCodes.getTotalElements());
     }
     @Transactional
-    public CodeDto createCode(String title, String content, Algorithm algorithm, Difficulty difficulty) {
-        Code newCode = Code.builder()
-                .title(title)
-                .content(content)
-                .algorithm(algorithm)
-                .difficulty(difficulty)
-                .createdAt(LocalDateTime.now())
-                .registerStatus(RegisterStatus.CREATED)
-                .build();
+    public ResponseEntity<?> updateCode(Long codeId, String title, String content) {
+        Optional<Code> optionalCode = codeRepository.findById(codeId);
 
-        return CodeDto.toDto(codeRepository.save(newCode));
+        if (optionalCode.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Code with ID " + codeId + " not found");
+        }
+
+        Code code = optionalCode.get();
+        code.setTitle(title);
+        code.setContent(content);
+
+        // 변경 내용을 강제로 병합
+        codeRepository.save(code);
+
+        return ResponseEntity.ok("Code updated successfully");
     }
+
     public Long createCode(CodeWithTestcases codeWithTestcases){
         Code newCode = Code.builder()
                 .title(codeWithTestcases.getCode().getTitle())

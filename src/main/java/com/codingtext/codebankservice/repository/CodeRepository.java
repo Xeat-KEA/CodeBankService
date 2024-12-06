@@ -34,6 +34,7 @@ public interface CodeRepository extends JpaRepository<Code, Long>, CustomReposit
 
     Page<Code> findByRegisterStatus(String registerStatus, Pageable pageable);
 
+    @Transactional
     @Modifying
     @Query("UPDATE Code c SET c.title = :title, c.content = :content WHERE c.codeId = :codeId")
     void updateCodeData(@Param("codeId") Long codeId, @Param("content") String content, @Param("title") String title);

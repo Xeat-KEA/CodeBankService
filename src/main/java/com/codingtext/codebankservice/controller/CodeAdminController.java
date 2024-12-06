@@ -262,7 +262,8 @@ public class CodeAdminController {
         // 데이터베이스 상태 업데이트
         try {
             codeRepository.updateRegisterStatusById(codeId, codeWithTestcases.getCode().getRegisterStatus());
-            codeRepository.updateCodeData(codeId, codeWithTestcases.getCode().getContent(), codeWithTestcases.getCode().getTitle());
+            //codeRepository.updateCodeData(codeId, codeWithTestcases.getCode().getContent(), codeWithTestcases.getCode().getTitle());
+            codeAdminService.updateCode(codeId,codeWithTestcases.getCode().getTitle(),codeWithTestcases.getCode().getContent());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }
