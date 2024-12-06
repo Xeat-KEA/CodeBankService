@@ -33,6 +33,10 @@ public class CustomRepositoryImpl implements CustomRepository {
         QCode code = QCode.code;
         BooleanBuilder builder = new BooleanBuilder();
 
+        if (registerStatus != null) {
+            builder.and(code.registerStatus.eq(registerStatus));
+        }
+
         // 알고리즘 필터 추가
 //        if (algorithms != null && !algorithms.isEmpty()) {
 //            builder.and(code.algorithm.in(algorithms.stream()

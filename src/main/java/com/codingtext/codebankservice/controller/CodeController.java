@@ -58,7 +58,7 @@ public class CodeController {
 
        // return ResponseEntity.ok(codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable));
         try {
-            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy,RegisterStatus.REGISTERED, pageable);
+            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy, RegisterStatus.REGISTERED, pageable);
             return ResponseEntity.ok(codes);
         } catch (Exception e) {
 //            Page<CodeDto> emptyPage = Page.empty();

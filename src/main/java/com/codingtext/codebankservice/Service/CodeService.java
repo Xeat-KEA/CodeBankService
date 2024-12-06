@@ -53,7 +53,7 @@ public class CodeService {
                                                      Pageable pageable) {
         registerStatus = RegisterStatus.REGISTERED;
         // 필터링된 문제 목록을 가져옴
-        Page<Code> codes = codeRepository.findCodesWithFilterAndSearch(algorithms, difficulties, searchBy, searchText, sortBy,registerStatus,pageable);
+        Page<Code> codes = codeRepository.findCodesWithFilterAndSearch(algorithms, difficulties, searchBy, searchText, sortBy, registerStatus, pageable);
 
         // 각 문제의 정답률을 계산하여 CodeDto로 변환
         List<CodeDto> codeDtos = codes.stream().map(code -> {
