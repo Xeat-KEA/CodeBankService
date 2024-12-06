@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Tag(name = "Code register API", description = "코딩 테스트 문제를 관리하는 API")
@@ -52,10 +53,10 @@ public class CodeAdminController {
     //승인대기중인 문제들의 대한 전체목록,컴파일 서버에서 testcase를 받아와 함께 admin으로 제공
     @Operation(summary = "승인 대기중인 문제목록 조회", description = "승인 대기중인 문제목록을 조회")
     @GetMapping("/register/pendinglists")
-    public ResponseEntity<Page<CodeWithTestcases>> getPendingApprovalCodesWithTestcases(Pageable pageable) {
+    public ResponseEntity<Page<CodeWithTestcasesAndNickName>> getPendingApprovalCodesWithTestcases(Pageable pageable) {
         //try {
             // 서비스 호출로 승인 대기중인 문제 조회
-            Page<CodeWithTestcases> pendingCodesWithTestcases = codeAdminService.getPendingCodesWithTestcases(pageable);
+            Page<CodeWithTestcasesAndNickName> pendingCodesWithTestcases = codeAdminService.getPendingCodesWithTestcases(pageable);
             return ResponseEntity.ok(pendingCodesWithTestcases);
 //        } catch (Exception e) {
 //            // 실패 시 400 상태 코드와 오류 메시지 반환
@@ -69,27 +70,37 @@ public class CodeAdminController {
     //문제 등록 table을 따로 만들지않음 이유?->병목현상=로드밸런싱,복잡도다운
     @Operation(summary = "승인 대기중인 문제 조회", description = "승인 대기중인 문제의 정보를 조회")
     @GetMapping("/register/pendinglists/{codeId}")
-    public ResponseEntity<CodeWithTestcasesAndNickName> getPendingApprovalCodesWithTestcases(@PathVariable Long codeId) {
+    public ResponseEntity<?> getPendingApprovalCodesWithTestcases(@PathVariable Long codeId) {
         //해당 코드아이디를 히스토리로 가진건 생성자밖에없음
         //히스토리가 유니크함->코드아이디로 히스토리 아이디를 찾아서 userId를 찾고 userId를 통해 user-service에서 닉네임을 보내주면됨
         Long historyId = codeHistoryService.getAiHistoryId(codeId);
-        String userId = codeHistoryService.getUserId(historyId);
-        System.out.println("히스토리아이디,유저아이디="+historyId+","+userId);
+        System.out.println("hisId: "+historyId);
+        //String userId = codeHistoryService.getUserId(historyId);
+        //System.out.println("userid:"+userId);
+        //System.out.println("히스토리아이디,유저아이디="+historyId+","+userId);
         //try {
-            ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
-
-            String nickname = userInfo.getBody().getNickName();
-            System.out.println("nickname:"+nickname);
+//            ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
+//
+//            String nickname = userInfo.getBody().getNickName();
+//            System.out.println("nickname:"+nickname);
 
             // 서비스 호출로 승인 대기중인 문제 조회
-            CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
-            CodeWithTestcasesAndNickName codeWithTestcasesAndNickName = CodeWithTestcasesAndNickName.builder()
-                    .nickName(nickname)
-                    .codeWithTestcases(codeWithTestcases)
-                    .build();
+        CodeWithTestcases codeWithTestcases = codeAdminService.getCodeWithTestcases(codeId);
 
-            System.out.println("닉네임="+nickname);
-            return ResponseEntity.ok(codeWithTestcasesAndNickName);
+        if(codeWithTestcases.getCode().getRegisterStatus()!=RegisterStatus.REQUESTED){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "해당 문제는 승인 대기 상태가 아닙니다.", "status", codeWithTestcases.getCode().getRegisterStatus()));
+
+//            CodeWithTestcasesAndNickName codeWithTestcasesAndNickName = CodeWithTestcasesAndNickName.builder()
+//                    .nickName(nickname)
+//                    .codeWithTestcases(codeWithTestcases)
+//                    .build();
+//
+//            System.out.println("닉네임="+nickname);
+        }else{
+            return ResponseEntity.ok(codeWithTestcases);
+        }
+
 //        } catch (Exception e) {
 //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 //        }
@@ -162,14 +173,20 @@ public class CodeAdminController {
     //admin 문제 관리를 위한 문제조회(정식등록된문제들만)
     @Operation(summary = "admin 전체 문제 관리(정식등록된문제들만)", description = "admin이 문제를 조회할수있다")
     @GetMapping("/codeLists")
-    public ResponseEntity<Page<Code>> getAllCodes(@PageableDefault(page = 0, size = 20) Pageable pageable) {
+    public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) List<String> algorithms,
+                                                     @RequestParam(required = false) List<String> difficulties,
+                                                     @RequestParam(required = false) String searchBy,  // 검색 기준 (예: title, codeId)
+                                                     @RequestParam(required = false) String searchText, // 검색어
+                                                     @RequestParam(required = false) String sortBy,     // 정렬 기준 (예: createdAt, correctRate)
+                                                     @PageableDefault(page = 0, size = 10) Pageable pageable) {
+
 
         try {
-            Page<Code> codes = codeService.getRegisteredCode(RegisterStatus.REGISTERED,pageable);
+            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy,RegisterStatus.REGISTERED, pageable);
             return ResponseEntity.ok(codes);
         } catch (Exception e) {
-            System.out.println("empty code?");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy,RegisterStatus.REGISTERED, pageable);
+            return ResponseEntity.ok(codes);
         }
     }
     @Operation(summary = "전체문제중 일부 문제 상세조회", description = "전체 문제중 특정 문제를 상세 조회할수있다")

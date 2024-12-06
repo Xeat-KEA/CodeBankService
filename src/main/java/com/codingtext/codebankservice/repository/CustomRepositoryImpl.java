@@ -28,6 +28,7 @@ public class CustomRepositoryImpl implements CustomRepository {
                                                    String searchBy,
                                                    String searchText,
                                                    String sortBy,
+                                                   RegisterStatus registerStatus,
                                                    Pageable pageable) {
         QCode code = QCode.code;
         BooleanBuilder builder = new BooleanBuilder();
@@ -38,6 +39,7 @@ public class CustomRepositoryImpl implements CustomRepository {
 //                    .map(Algorithm::valueOf)
 //                    .collect(Collectors.toList())));
 //        }
+
         if (algorithms != null && !algorithms.isEmpty()) {
             builder.and(code.algorithm.in(algorithms.stream()
                     .map(algo -> {

@@ -3,9 +3,12 @@ package com.codingtext.codebankservice.Service;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
+import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcasesAndNickName;
 import com.codingtext.codebankservice.Dto.Compile.Testcase;
+import com.codingtext.codebankservice.Dto.User.UserInfoDto;
 import com.codingtext.codebankservice.client.BaseResponse;
 import com.codingtext.codebankservice.client.CompileServiceClient;
+import com.codingtext.codebankservice.client.UserServiceClient;
 import com.codingtext.codebankservice.entity.Algorithm;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.Difficulty;
@@ -32,6 +35,8 @@ public class CodeAdminService {
     private final CodeRepository codeRepository;
     private final CodeHistoryRepository codeHistoryRepository;
     private final CompileServiceClient compileServiceClient;
+    private final CodeHistoryService codeHistoryService;
+    private final UserServiceClient userServiceClient;
 
 
 
@@ -52,21 +57,30 @@ public class CodeAdminService {
     }
 
     @Transactional
-    public Page<CodeWithTestcases> getPendingCodesWithTestcases(Pageable pageable) {
+    public Page<CodeWithTestcasesAndNickName> getPendingCodesWithTestcases(Pageable pageable) {
         // 승인 대기 중인 문제들을 페이지네이션으로 조회
         Page<Code> pendingCodes = codeRepository.findByRegisterStatus(RegisterStatus.REQUESTED, pageable);
 
 
         // 각 문제에 대해 컴파일 서버에서 Testcase 리스트를 가져와 CodeWithTestcases로 변환
-        List<CodeWithTestcases> codeWithTestcasesList = pendingCodes.getContent().stream()
+        List<CodeWithTestcasesAndNickName> codeWithTestcasesList = pendingCodes.getContent().stream()
                 .map(code -> {
                     Integer id = code.getCodeId().intValue();
                     //형식이 달라서 안됨 baseresponse만들것!
                     BaseResponse<CodeIdWithTestcases> response = compileServiceClient.findCode(id);
                     List<Testcase> testcases = response.getData().getTestcases();
                     //List<Testcase> testcases = compileServiceClient.getTestcasesByCodeId(code.getCodeId());
+                    Long codeId = code.getCodeId();
+                    Long historyId = codeHistoryService.getAiHistoryId(codeId);
+                    String userId = codeHistoryService.getUserId(historyId);
 
-                    return new CodeWithTestcases(code, testcases);
+                    ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
+
+                    String nickname = userInfo.getBody().getNickName();
+
+
+
+                    return new CodeWithTestcasesAndNickName(nickname, code, testcases);
                 })
                 .collect(Collectors.toList());
 
