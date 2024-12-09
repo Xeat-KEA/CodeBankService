@@ -44,6 +44,7 @@ public class CodeHistoryService {
         return codeHistoryRepository.findCodeHistoryIdByUserIdAndCodeId(userId, codeId);
     }
     public Long getAiHistoryId(Long codeId){
+        //자꾸 중복으로 2개이상 가져오네
         return codeHistoryRepository.findCodeHistoryIdByCodeId(codeId);
     }
     //ai생성문제등 해당 코드아이디에대해 히스토리가 유니크할때만 사용
@@ -112,7 +113,7 @@ public class CodeHistoryService {
     public void updateOrAddHistory(CodeHistoryDto historyRequest,String userId) {
         CodeHistory history = codeHistoryRepository.findByCode_CodeIdAndUserId(historyRequest.getCodeId(), historyRequest.getUserId());
 
-        if (history.getCodeHistoryId()!=null) {
+        if (history != null && history.getCodeHistoryId() != null) {
             // 풀이 기록이 있으면 compiledAt,작성코드내용,정답여부 갱신
             //CodeHistory existingHistory = history.get();
             history.setCompiledAt(LocalDateTime.now());
@@ -136,7 +137,6 @@ public class CodeHistoryService {
                     .createdAt(LocalDateTime.now()) // 생성 시간
                     .compiledAt(LocalDateTime.now()) // 컴파일 시간은 초기화되지 않음
                     .build();
-
             codeHistoryRepository.save(codeHistory);
 
 
