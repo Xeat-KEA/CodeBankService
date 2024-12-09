@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Base64;
 
 @Tag(name = "Code API", description = "코딩 테스트 문제를 관리하는 API")
 @RestController
@@ -31,7 +32,6 @@ public class CodeController {
     private final CodeService codeService;
     private final CompileServiceClient compileServiceClient;
     private final CodeHistoryService codeHistoryService;
-    private CodeRepository codeRepository;
 
     @Operation(summary = "feignclient test용도", description = "컴파일서비에서 codeId에 따른 테스트케이스 조회")
     @GetMapping("/open/{codeId}")
@@ -43,6 +43,7 @@ public class CodeController {
 
 
     //전체문제조회+페이지처리
+    //로그인/비로그인 전부 조회 가능
     @Operation(summary = "전체 문제 조회", description = "알고리즘, 난이도, 검색, 정렬을 적용하여 전체 문제를 조회")
     @GetMapping("/lists")
     public ResponseEntity<Page<CodeDto>> getAllCodes(@RequestParam(required = false) List<String> algorithms,
@@ -59,6 +60,9 @@ public class CodeController {
        // return ResponseEntity.ok(codeService.getFilteredAndSearchedCodes(algorithm, difficulty, searchBy, searchText, sortBy, pageable));
         try {
             Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy, RegisterStatus.REGISTERED, pageable);
+            // content를 Base64로 인코딩하여 변환
+
+
             return ResponseEntity.ok(codes);
         } catch (Exception e) {
 //            Page<CodeDto> emptyPage = Page.empty();
@@ -80,26 +84,32 @@ public class CodeController {
 
             // 히스토리 ID 조회
             // 히스토리가 없으면 생성
-            // 어떤 문제에 대한 히스토리가 중복으로 존재하면안됨
+            // 어떤 문제에 대한 동일 유저에대한 히스토리가 중복으로 존재하면안됨
             Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
             System.out.println("userid="+userId);
             System.out.println("historyid="+historyId);
             CodeDto codeForRegisterStatus = codeService.getCodeById(codeId);
             RegisterStatus registerStatus = codeForRegisterStatus.getRegisterStatus();
             // 문제 상태가 created인 문제는 불러오면 안됨
-           if(registerStatus != RegisterStatus.CREATED) {
+            // requested인 상태도 안됨
+            // 정식등록된 문제만
+           if(registerStatus == RegisterStatus.REGISTERED) {
+               CodeDto code = codeService.getCodeById(codeId);
+               String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
+               code = code.toBuilder()
+                       .content(encodedContent)
+                       .build();
                if (historyId.isPresent()) {
                    // 히스토리가 있으면 코드 정보 반환
-                   CodeDto code = codeService.getCodeById(codeId);
+
                    System.out.println("sucess historyid=" + historyId);
-                   //프론트에 historyId도 반환하는가?
                    return ResponseEntity.ok(code);
                } else if (historyId.isEmpty()) {
                    // 히스토리가 없으면 생성 후 코드 정보 반환
                    System.out.println("sucess but no historyid=" + historyId);
                    //히스토리 생성후 히스토리아이디 반환
                    Long newHistoryId = codeHistoryService.createHistory(userId, codeId);
-                   CodeDto code = codeService.getCodeById(codeId);
+                   //CodeDto code = codeService.getCodeById(codeId);
                    return ResponseEntity.ok(code);
                }
                //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
@@ -118,8 +128,13 @@ public class CodeController {
     @Operation(summary = "특정 문제 조회-비로그인 유저전용", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("non/lists/{codeId}")
     public ResponseEntity<CodeDto> NongetCodeById(@PathVariable Long codeId) {
+        CodeDto code = codeService.getCodeById(codeId);
+        String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
+        code = code.toBuilder()
+                .content(encodedContent)
+                .build();
         try {
-            CodeDto code = codeService.getCodeById(codeId);
+            //CodeDto code = codeService.getCodeById(codeId);
             return ResponseEntity.ok(code);
         } catch (Exception e) {
             CodeDto emptyCode = new CodeDto();

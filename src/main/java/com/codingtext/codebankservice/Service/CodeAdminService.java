@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,20 +47,29 @@ public class CodeAdminService {
     public CodeWithTestcases getCodeWithTestcases(Long codeId) {
         Code code = codeRepository.findById(codeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 문제가 존재하지 않습니다."));
+        String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
+        // Code 엔티티를 DTO로 변환하면서 content를 인코딩된 값으로 변환
+        Code codeDecode = Code.builder()
+                .codeId(code.getCodeId())
+                .title(code.getTitle())
+                .content(encodedContent)
+                .difficulty(code.getDifficulty())
+                .algorithm(code.getAlgorithm())
+                .registerStatus(code.getRegisterStatus())
+                .build();
 
         // CompileService로부터 Testcase 리스트 가져오기
         Integer id = codeId.intValue();
         //형식이 달라서 안됨 baseresponse만들것!
         BaseResponse<CodeIdWithTestcases> response = compileServiceClient.findCode(id);
         List<Testcase> testcases = response.getData().getTestcases();
-        return new CodeWithTestcases(code, testcases);
+        return new CodeWithTestcases(codeDecode, testcases);
     }
 
     @Transactional
     public Page<CodeWithTestcasesAndNickName> getPendingCodesWithTestcases(Pageable pageable) {
         // 승인 대기 중인 문제들을 페이지네이션으로 조회
         Page<Code> pendingCodes = codeRepository.findByRegisterStatus(RegisterStatus.REQUESTED, pageable);
-
 
         // 각 문제에 대해 컴파일 서버에서 Testcase 리스트를 가져와 CodeWithTestcases로 변환
         List<CodeWithTestcasesAndNickName> codeWithTestcasesList = pendingCodes.getContent().stream()
@@ -72,14 +82,17 @@ public class CodeAdminService {
                     Long codeId = code.getCodeId();
                     Long historyId = codeHistoryService.getAiHistoryId(codeId);
                     String userId = codeHistoryService.getUserId(historyId);
-
                     ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
-
                     String nickname = userInfo.getBody().getNickName();
+                    // content를 Base64로 인코딩
+                    String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
+
+                    // CodeWithTestcasesAndNickName 객체 생성
+                    Code encodedCode = code.toBuilder().content(encodedContent).build(); // content 인코딩
 
 
 
-                    return new CodeWithTestcasesAndNickName(nickname, code, testcases);
+                    return new CodeWithTestcasesAndNickName(nickname, encodedCode, testcases);
                 })
                 .collect(Collectors.toList());
 

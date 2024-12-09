@@ -22,6 +22,7 @@ import com.codingtext.codebankservice.repository.CodeRepository;
 import com.sun.source.tree.IntersectionTypeTree;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Base64;
+
 
 @Tag(name = "Code register API", description = "코딩 테스트 문제를 관리하는 API")
 @RestController
@@ -113,6 +116,7 @@ public class CodeAdminController {
     //정식등록요청(admin->codebank)->승인됨
     // 블로그 쪽으로 알리기 -> 블로그에서 알림 전송
     // 수정된 내용 코드에 반영하기 상태뿐만아니라 코드 내용까지 수정할수있어야함
+    // 잘못된 codeid를 넣거나 하는 경우 코드 새로 생길수있으니 해당사항에대한 예외처리를할것
     @Operation(summary = "문제 정식등록 요청 승인 후 상태 저장", description = "AI를 통해 생성한 문제를 정식 등록하기 위해 보낸 요청의 답을 받아 응답하기")
     @PutMapping("/register/{codeId}/permit")
     public ResponseEntity<String> updateRegisterStatus(
@@ -123,6 +127,15 @@ public class CodeAdminController {
         if (codeWithTestcasesForEdit == null || codeWithTestcasesForEdit.getTestcases() == null || codeWithTestcasesForEdit.getContent() == null) {
             return ResponseEntity.badRequest().body("유효하지 않은 어드민 서비스 응답입니다.");
         }
+        // Base64로 인코딩된 content 디코딩
+        String decodedContent;
+        try {
+            byte[] decodedBytes = Base64.getDecoder().decode(codeWithTestcasesForEdit.getContent());
+            decodedContent = new String(decodedBytes);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Content 디코딩 실패");
+        }
+
 
         // 테스트케이스를 컴파일 서비스로 전송
         try {
@@ -144,7 +157,7 @@ public class CodeAdminController {
         try {
             codeRepository.updateRegisterStatusById(codeId, RegisterStatus.REGISTERED);
             //codeRepository.updateCodeData(codeId, adminResponse.getCodeContent(), adminResponse.getTitle());
-            codeAdminService.updateCode(codeId,codeWithTestcasesForEdit.getTitle(),codeWithTestcasesForEdit.getContent(),codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
+            codeAdminService.updateCode(codeId,codeWithTestcasesForEdit.getTitle(),decodedContent,codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }
@@ -230,11 +243,32 @@ public class CodeAdminController {
         try {
             //받은 문제를 저장하고 생성된 문제의 코드아이디 받아오기
             Integer newCodeId = codeAdminService.createCode(codeWithTestcases).intValue();
+            String decodedContent;
+            try {
+                byte[] decodedBytes = Base64.getDecoder().decode(codeWithTestcases.getCode().getContent());
+                decodedContent = new String(decodedBytes);
+            } catch (IllegalArgumentException e) {
+                System.out.println("디코딩실패");
+                return ResponseEntity.badRequest().body(null);
+            }
+            Code codeDecode = Code.builder()
+                    .codeId(codeWithTestcases.getCode().getCodeId())
+                    .createdAt(codeWithTestcases.getCode().getCreatedAt())
+                    .title(codeWithTestcases.getCode().getTitle())
+                    .content(decodedContent)
+                    .algorithm(codeWithTestcases.getCode().getAlgorithm())
+                    .difficulty(codeWithTestcases.getCode().getDifficulty())
+                    .build();
+
+            CodeWithTestcases codeWithTestcasesDecode = CodeWithTestcases.builder()
+                    .code(codeDecode)
+                    .testcases(codeWithTestcases.getTestcases())
+                    .build();
 
             //테스트케이스 분리후 코드아이디로 컴파일서버에 추가요청
-            codeAdminService.saveTestcase(codeWithTestcases,newCodeId);
+            codeAdminService.saveTestcase(codeWithTestcasesDecode,newCodeId);
 
-            return ResponseEntity.ok(codeWithTestcases);
+            return ResponseEntity.ok(codeWithTestcasesDecode);
         } catch (Exception e) {
             CodeWithTestcases emptyCode = new CodeWithTestcases(null,null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
@@ -248,15 +282,33 @@ public class CodeAdminController {
             @PathVariable Long codeId,
             @RequestBody CodeWithTestcasesForEdit codeWithTestcasesForEdit) {
 
-
+        String decodedContent;
+        try {
+            byte[] decodedBytes = Base64.getDecoder().decode(codeWithTestcasesForEdit.getContent());
+            decodedContent = new String(decodedBytes);
+        } catch (IllegalArgumentException e) {
+            System.out.println("디코딩실패");
+            return ResponseEntity.badRequest().body(null);
+        }
+        CodeWithTestcasesForEdit codeWithTestcasesForEditDecode = CodeWithTestcasesForEdit.builder()
+                .codeId(codeWithTestcasesForEdit.getCodeId())
+                .title(codeWithTestcasesForEdit.getTitle())
+                .algorithm(codeWithTestcasesForEdit.getAlgorithm())
+                .content(decodedContent)
+                .testcases(codeWithTestcasesForEdit.getTestcases())
+                .build();
 
         // 테스트케이스를 컴파일 서비스로 전송
         try {
             //compileServiceClient.updateTestcases(codeId, adminResponse.getTestcases());
             //adminResponse.getTestcases()를 codeIdwithTestcase에 넣어 compile서비스에 전송
             Integer id = codeWithTestcasesForEdit.getCodeId().intValue();
+            System.out.println("id:"+id);
+            // Base64로 인코딩된 content 디코딩
+
+
             // AdminResponse에서 데이터를 추출하여 CodeIdWithTestcases에 매핑
-            codeAdminService.saveTestcaseForEdit(codeWithTestcasesForEdit,id);
+            codeAdminService.saveTestcaseForEdit(codeWithTestcasesForEditDecode,id);
 
 
         } catch (Exception e) {
@@ -265,10 +317,11 @@ public class CodeAdminController {
 
         // 데이터베이스 상태 업데이트
         try {
+
             //정식등록된 문제만 edit하기때문에 상태는 변화시킬필요없음
             //codeRepository.updateRegisterStatusById(codeId, codeWithTestcasesForEdit.getRegisterStatus());
             //codeRepository.updateCodeData(codeId, codeWithTestcases.getCode().getContent(), codeWithTestcases.getCode().getTitle());
-            codeAdminService.updateCode(codeId,codeWithTestcasesForEdit.getTitle(),codeWithTestcasesForEdit.getContent(),codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
+            codeAdminService.updateCode(codeId,codeWithTestcasesForEdit.getTitle(),codeWithTestcasesForEditDecode.getContent(),codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }

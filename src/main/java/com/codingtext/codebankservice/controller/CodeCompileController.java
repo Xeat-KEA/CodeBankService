@@ -33,14 +33,15 @@ public class CodeCompileController {
        // Long codeId = historyRequest.getCodeId();
 
         try {
-            if (userId != null) {//컴파일 기반으로 바꾸기
+            if (userId != null) {
+                //히스토리존재->갱신,히스토리 없음->생성,유저없음->에러
                 codeHistoryService.updateOrAddHistory(historyRequest, userId);
                 return ResponseEntity.ok("히스토리 저장 완료");
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저 또는 히스토리를 찾을수없음");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을수없음");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("히스토리 저장 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("업데이트 실패: " + e.getMessage());
         }
     }
     @Operation(summary = "정답제출시 히스토리 생성/갱신 및 점수전달", description = "유저가 문제를 제출하면 해당 문제를 히스토리에 저장하거나 이미 기록이 있을경우 시간및정답여부 갱신 + 유저서비스로 점수전달")
@@ -62,7 +63,7 @@ public class CodeCompileController {
             return ResponseEntity.ok("히스토리 저장 완료");
         } else {
             // 히스토리가 없으면 null 반환
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저 또는 히스토리를 찾을수없음");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을수없음");
         }
     }
 

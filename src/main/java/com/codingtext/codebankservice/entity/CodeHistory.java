@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,7 +27,7 @@ public class CodeHistory {
     @Column(nullable = false)
     private String userId;
 
-    @Column(nullable = false, length = 3000)
+    @Column(nullable = false, length = 5000)
     private String writtenCode;
 
     @Column(nullable = false)

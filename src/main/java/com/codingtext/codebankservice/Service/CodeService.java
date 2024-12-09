@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,9 +61,13 @@ public class CodeService {
             long correctCount = codeHistoryRepository.countByCode_CodeIdAndIsCorrectTrue(code.getCodeId());
             double correctRate = calculateCorrectRate(code.getCodeId());
 
+            // Base64로 content 인코딩
+            String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
+
             CodeDto codeDto = CodeDto.toDto(code);
             codeDto.setCorrectRate(correctRate);
             codeDto.setCorrectCount(correctCount); // 정답 수 설정
+            codeDto.setContent(encodedContent); // 인코딩된 content 설정
             return codeDto;
         }).collect(Collectors.toList());
 

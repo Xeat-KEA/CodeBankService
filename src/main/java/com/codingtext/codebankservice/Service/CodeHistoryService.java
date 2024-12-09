@@ -110,34 +110,35 @@ public class CodeHistoryService {
     }
     @Transactional
     public void updateOrAddHistory(CodeHistoryDto historyRequest,String userId) {
-        Optional<CodeHistory> history = codeHistoryRepository.findByCode_CodeIdAndUserId(
-                historyRequest.getCodeId(), historyRequest.getUserId());
+        CodeHistory history = codeHistoryRepository.findByCode_CodeIdAndUserId(historyRequest.getCodeId(), historyRequest.getUserId());
 
-        if (history.isPresent()) {
-            // 풀이 기록이 있으면 compiledAt 갱신
-            CodeHistory existingHistory = history.get();
-            CodeHistory updatedHistory = existingHistory.toBuilder()
-                    .compiledAt(LocalDateTime.now())
-                    .build();
-            codeHistoryRepository.save(updatedHistory);
+        if (history.getCodeHistoryId()!=null) {
+            // 풀이 기록이 있으면 compiledAt,작성코드내용,정답여부 갱신
+            //CodeHistory existingHistory = history.get();
+            history.setCompiledAt(LocalDateTime.now());
+            history.setWrittenCode(historyRequest.getWrittenCode());
+            history.setIsCorrect(historyRequest.getIsCorrect());
+            codeHistoryRepository.save(history);
         } else {
+            // 풀이 기록이 없으면 히스토리를 생성 + 히스토리를 받아온 값으로 저장
             // 코드 엔티티 조회
             Code code = codeRepository.findById(historyRequest.getCodeId())
                     .orElseThrow(() -> new EntityNotFoundException("해당 코드가 존재하지 않습니다."));
             // registerStatus에 따라 isCreatedByAi 값 설정
-            boolean isCreatedByAi = !RegisterStatus.CREATED.equals(code.getRegisterStatus());
+            boolean isCreatedByAi = RegisterStatus.CREATED.equals(code.getRegisterStatus());
             // 새로운 CodeHistory 생성
             CodeHistory codeHistory = CodeHistory.builder()
                     .code(code) // Code 엔티티 설정
                     .userId(userId)
-                    .writtenCode("hello world!") // 초기에는 작성된 코드가 없음
-                    .isCorrect(false) // 초기 상태는 정답이 아님
+                    .writtenCode(historyRequest.getWrittenCode()) // 초기에는 작성된 코드가 없음,문제를 컴파일안하고 바로 제출할경우
+                    .isCorrect(historyRequest.getIsCorrect()) // 초기 상태는 정답이 아님,문제를 컴파일안하고 바로 제출할경우
                     .isCreatedByAI(isCreatedByAi) // AI 문제 여부 초기화
                     .createdAt(LocalDateTime.now()) // 생성 시간
                     .compiledAt(LocalDateTime.now()) // 컴파일 시간은 초기화되지 않음
                     .build();
 
             codeHistoryRepository.save(codeHistory);
+
 
         }
     }

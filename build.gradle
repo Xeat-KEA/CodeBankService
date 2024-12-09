@@ -53,6 +53,9 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 	//config 깃허브에서 가져오기
 	implementation 'org.springframework.cloud:spring-cloud-config-client'
+	//그라파나,프로메테우스
+	implementation('org.springframework.boot:spring-boot-actuator')
+	runtimeOnly('io.micrometer:micrometer-registry-prometheus')
 
 
 

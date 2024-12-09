@@ -43,7 +43,7 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     boolean existsByCode_CodeId(Long codeId);
 
     // 특정 문제 ID와 사용자 ID로 풀이 기록 조회
-    Optional<CodeHistory> findByCode_CodeIdAndUserId(Long codeId, String userId);
+    CodeHistory findByCode_CodeIdAndUserId(Long codeId, String userId);
 
     Optional<CodeHistory> findCodeHistoryByUserIdAndCode_CodeId(String userId, Long codeId);
     //Long findCodeHistoryIdByCode_CodeId(Long codeId);
