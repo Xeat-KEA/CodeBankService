@@ -321,7 +321,7 @@ public class CodeAdminController {
             //정식등록된 문제만 edit하기때문에 상태는 변화시킬필요없음
             //codeRepository.updateRegisterStatusById(codeId, codeWithTestcasesForEdit.getRegisterStatus());
             //codeRepository.updateCodeData(codeId, codeWithTestcases.getCode().getContent(), codeWithTestcases.getCode().getTitle());
-            codeAdminService.updateCode(codeId,codeWithTestcasesForEdit.getTitle(),codeWithTestcasesForEditDecode.getContent(),codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
+            codeAdminService.editCode(codeId,codeWithTestcasesForEdit.getTitle(),codeWithTestcasesForEditDecode.getContent(),codeWithTestcasesForEdit.getAlgorithm(),codeWithTestcasesForEdit.getDifficulty());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }

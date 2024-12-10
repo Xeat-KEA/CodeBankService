@@ -112,6 +112,26 @@ public class CodeAdminService {
         code.setContent(content);
         code.setAlgorithm(algorithm);
         code.setDifficulty(difficulty);
+        code.setCreatedAt(LocalDateTime.now());
+
+        // 변경 내용을 강제로 병합
+        codeRepository.save(code);
+
+        return ResponseEntity.ok("Code updated successfully");
+    }
+    @Transactional
+    public ResponseEntity<?> editCode(Long codeId, String title, String content,Algorithm algorithm,Difficulty difficulty) {
+        Optional<Code> optionalCode = codeRepository.findById(codeId);
+
+        if (optionalCode.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Code with ID " + codeId + " not found");
+        }
+
+        Code code = optionalCode.get();
+        code.setTitle(title);
+        code.setContent(content);
+        code.setAlgorithm(algorithm);
+        code.setDifficulty(difficulty);
 
         // 변경 내용을 강제로 병합
         codeRepository.save(code);
