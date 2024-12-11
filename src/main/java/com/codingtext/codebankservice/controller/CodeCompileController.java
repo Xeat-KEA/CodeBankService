@@ -66,8 +66,8 @@ public class CodeCompileController {
             UserPoint userPoint = new UserPoint(userId,point);
 
             System.out.println("userpoint: "+userPoint);
-            
-            userServiceClient.updateScore(userPoint);
+
+            userServiceClient.updateScore(userId,userPoint);
 
 
 
