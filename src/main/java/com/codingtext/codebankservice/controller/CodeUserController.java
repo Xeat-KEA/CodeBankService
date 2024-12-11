@@ -25,6 +25,7 @@ public class CodeUserController {
         UserPoint userPoint = new UserPoint(userId,point);
         return ResponseEntity.ok(userPoint);
     }
+
 //    @Operation(summary = "유저아이디확인용 나중에 삭제할것", description = "유저아이디 반환")
 //    @GetMapping("/id")
 //    public String getUserId(@RequestHeader("UserId") String userId) {
