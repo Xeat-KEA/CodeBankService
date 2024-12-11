@@ -108,7 +108,7 @@ public class CodeController {
                    // 히스토리가 없으면 생성 후 코드 정보 반환
                    System.out.println("sucess but no historyid=" + historyId);
                    //히스토리 생성후 히스토리아이디 반환
-                   Long newHistoryId = codeHistoryService.createHistory(userId, codeId);
+                   Long newHistoryId = codeHistoryService.createContentEmptyHistory(userId, codeId);
                    //CodeDto code = codeService.getCodeById(codeId);
                    return ResponseEntity.ok(code);
                }

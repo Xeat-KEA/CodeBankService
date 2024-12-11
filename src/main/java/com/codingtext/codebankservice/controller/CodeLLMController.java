@@ -68,7 +68,7 @@ public class CodeLLMController {
             }
             System.out.println("codeId:"+codeId);
             //생성된 문제를 바탕으로 히스토리 생성
-            Long hisId = codeHistoryService.createHistory(userId, codeId);
+            Long hisId = codeHistoryService.createContentEmptyHistory(userId, codeId);
             if(hisId == null){
                 throw new IllegalStateException("히스토리 생성 중 오류가 발생했습니다!");
             }

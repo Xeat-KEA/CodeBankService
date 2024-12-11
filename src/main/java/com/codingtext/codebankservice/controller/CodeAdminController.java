@@ -242,7 +242,7 @@ public class CodeAdminController {
 
         try {
             //받은 문제를 저장하고 생성된 문제의 코드아이디 받아오기
-            Integer newCodeId = codeAdminService.createCode(codeWithTestcases).intValue();
+            //Integer newCodeId = codeAdminService.createCode(codeWithTestcases).intValue();
             String decodedContent;
             try {
                 byte[] decodedBytes = Base64.getDecoder().decode(codeWithTestcases.getCode().getContent());
@@ -264,6 +264,8 @@ public class CodeAdminController {
                     .code(codeDecode)
                     .testcases(codeWithTestcases.getTestcases())
                     .build();
+            
+            Integer newCodeId = codeAdminService.createCode(codeWithTestcasesDecode).intValue();
 
             //테스트케이스 분리후 코드아이디로 컴파일서버에 추가요청
             codeAdminService.saveTestcase(codeWithTestcasesDecode,newCodeId);

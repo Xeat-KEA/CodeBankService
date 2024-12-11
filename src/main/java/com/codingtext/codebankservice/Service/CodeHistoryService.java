@@ -53,12 +53,12 @@ public class CodeHistoryService {
     }
 
     @Transactional
-    public Long createHistory(String userId, Long codeId) {
+    public Long createContentEmptyHistory(String userId, Long codeId) {
         // 코드 엔티티를 조회
         Code code = codeRepository.findById(codeId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 코드가 존재하지 않습니다."));
         // registerStatus에 따라 isCreatedByAi 값 설정
-        boolean isCreatedByAi = !RegisterStatus.CREATED.equals(code.getRegisterStatus());
+        boolean isCreatedByAi = RegisterStatus.CREATED.equals(code.getRegisterStatus());
 
         // CodeHistory 객체 생성
         CodeHistory codeHistory = CodeHistory.builder()
