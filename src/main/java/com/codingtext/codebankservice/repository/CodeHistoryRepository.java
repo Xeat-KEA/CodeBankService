@@ -26,11 +26,11 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
    // 특정 문제의 정답 횟수
    long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
     //난이도 목록 조회
-    @Query("SELECT DISTINCT c.code.difficulty FROM CodeHistory c WHERE c.userId = :userId AND c.isCorrect = true")
-    List<Difficulty> findDistinctCodeDifficultyByUserIdAndIsCorrectTrueAndCode_RegisterStatus(String userId,RegisterStatus registerStatus);
+    @Query("SELECT DISTINCT c.code.difficulty FROM CodeHistory c WHERE c.userId = :userId AND c.isCorrect = true AND c.code.registerStatus = :registerStatus")
+    List<Difficulty> findDistinctCodeDifficultyByUserIdAndIsCorrectTrueAndCode_RegisterStatus(@Param("userId") String userId, @Param("registerStatus") RegisterStatus registerStatus);
 
 
-    @Transactional
+ @Transactional
     @Modifying
     @Query("DELETE FROM CodeHistory ch WHERE ch.code.codeId = :codeId")
     void deleteAllByCodeId(@Param("codeId") Long codeId);
