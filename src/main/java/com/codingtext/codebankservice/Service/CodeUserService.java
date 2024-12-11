@@ -1,6 +1,8 @@
 package com.codingtext.codebankservice.Service;
 
+import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.entity.Difficulty;
+import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,7 @@ public class CodeUserService {
         );
 
         // 유저가 푼 문제의 난이도 목록 가져오기
-        List<Difficulty> solvedDifficulties = codeHistoryRepository.findDistinctCodeDifficultyByUserIdAndIsCorrectTrue(userId);
+        List<Difficulty> solvedDifficulties = codeHistoryRepository.findDistinctCodeDifficultyByUserIdAndIsCorrectTrueAndCode_RegisterStatus(userId,RegisterStatus.REGISTERED);
 
         // 난이도별 점수를 합산
         int userPoint = solvedDifficulties.stream()
@@ -34,5 +36,17 @@ public class CodeUserService {
         return userPoint;
     }
     //특정유저의 문제를 푼횟수(정답오답 상관없이)
+    public int calculateUserCount(String userId) {
+        // 유저가 풀었던 문제 중 등록된 문제 가져오기
+        List<CodeHistory> solvedHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_RegisterStatus(userId, RegisterStatus.REGISTERED);
+
+        // 정답인 문제의 횟수 계산
+        int count = (int) solvedHistory.stream()
+                .filter(CodeHistory::getIsCorrect) // 정답 여부 필터링
+                .count();
+
+        return count;
+    }
+
 
 }

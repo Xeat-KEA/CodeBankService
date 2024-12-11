@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class UserPoint {
     String userId;
     int score;
+    int solvedCount;
 }

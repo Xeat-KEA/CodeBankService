@@ -4,6 +4,7 @@ import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
 import com.codingtext.codebankservice.entity.Code;
 import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.entity.Difficulty;
+import com.codingtext.codebankservice.entity.RegisterStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
    long countByCode_CodeIdAndIsCorrectTrue(Long codeId);
     //난이도 목록 조회
     @Query("SELECT DISTINCT c.code.difficulty FROM CodeHistory c WHERE c.userId = :userId AND c.isCorrect = true")
-    List<Difficulty> findDistinctCodeDifficultyByUserIdAndIsCorrectTrue(String userId);
+    List<Difficulty> findDistinctCodeDifficultyByUserIdAndIsCorrectTrueAndCode_RegisterStatus(String userId,RegisterStatus registerStatus);
 
 
     @Transactional
@@ -53,6 +54,8 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     //String findUserIdByCodeHistoryId(Long codeHistoryId);
     @Query("SELECT h.userId FROM CodeHistory h WHERE h.codeHistoryId = :codeHistoryId")
     String findUserIdByCodeHistoryId(@Param("codeHistoryId") Long codeHistoryId);
+
+    List<CodeHistory> findCodeHistoryByUserIdAndCode_RegisterStatus(String userId, RegisterStatus registerStatus);
 
 
 

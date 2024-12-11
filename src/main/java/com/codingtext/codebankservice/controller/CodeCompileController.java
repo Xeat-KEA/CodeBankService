@@ -59,11 +59,14 @@ public class CodeCompileController {
             System.out.println("userId: "+userId);
 
             codeHistoryService.updateOrAddHistory(historyRequest, userId);
+            //유저의 종합점수
             int point = codeUserService.calculateUserPoint(userId);
+            //유저가 registered중 문제를 맞춘횟수
+            int count = codeUserService.calculateUserCount(userId);
 
             System.out.println("point: "+point);
 
-            UserPoint userPoint = new UserPoint(userId,point);
+            UserPoint userPoint = new UserPoint(userId,point,count);
 
             System.out.println("userpoint: "+userPoint);
 
