@@ -69,7 +69,7 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     @Query("SELECT h.codeHistoryId FROM CodeHistory h WHERE h.userId = :userId AND h.code.codeId = :codeId")
     Optional<Long> findCodeHistoryIdByUserIdAndCodeId(@Param("userId") String userId, @Param("codeId") Long codeId);
 
-
+   void deleteByUserId(@Param("userId") String userId);
 
 
 
