@@ -64,9 +64,12 @@ public class CodeCompileController {
             System.out.println("point: "+point);
 
             UserPoint userPoint = new UserPoint(userId,point);
-            userServiceClient.updateScore(userPoint);
 
             System.out.println("userpoint: "+userPoint);
+            
+            userServiceClient.updateScore(userPoint);
+
+
 
             //updateScore가 ok인 경우와 아닌경우로 error분기 나누기
             return ResponseEntity.ok("히스토리 저장 완료");
