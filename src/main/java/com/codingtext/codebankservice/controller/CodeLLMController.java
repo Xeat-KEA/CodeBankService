@@ -26,7 +26,7 @@ import java.util.Optional;
 @Tag(name = "Code LLM API", description = "LLM을 통해 문제를 생성하는 api")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/code/LLM")
+@RequestMapping("/code/llm")
 public class CodeLLMController {
     private final CodeService codeService;
     private final LLMServiceClient llmServiceClient;
