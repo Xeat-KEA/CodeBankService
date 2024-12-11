@@ -67,7 +67,7 @@ public class CodeCompileController {
 
             System.out.println("userpoint: "+userPoint);
 
-            userServiceClient.updateScore(userId,userPoint);
+            userServiceClient.updateScore(userPoint);
 
 
 

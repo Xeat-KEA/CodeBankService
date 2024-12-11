@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @FeignClient(name = "user-service")
 public interface UserServiceClient {
     @PutMapping("/users/score")
-    ResponseEntity<String> updateScore(@RequestHeader("UserId") String userId,@RequestBody UserPoint userPoint);
+    ResponseEntity<String> updateScore(@RequestBody UserPoint userPoint);
 
     @GetMapping("/users/info")
     ResponseEntity<UserInfoDto> getUserInfo(@RequestHeader("UserId") String userId);

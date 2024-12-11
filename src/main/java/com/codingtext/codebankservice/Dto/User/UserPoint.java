@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserPoint {
     String userId;
-    int point;
+    int score;
 }
