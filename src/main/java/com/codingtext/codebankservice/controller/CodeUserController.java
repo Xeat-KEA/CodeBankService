@@ -22,7 +22,8 @@ public class CodeUserController {
     @GetMapping("/point")
     public ResponseEntity<UserPoint> getPoint(@RequestHeader("UserId") String userId) {
         int point = codeUserService.calculateUserPoint(userId);
-        UserPoint userPoint = new UserPoint(userId,point);
+        int count = codeUserService.calculateUserCount(userId);
+        UserPoint userPoint = new UserPoint(userId,point,count);
         return ResponseEntity.ok(userPoint);
     }
 
