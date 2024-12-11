@@ -2,6 +2,7 @@ package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
+import com.codingtext.codebankservice.Dto.Compile.CodeWithTestcases;
 import com.codingtext.codebankservice.Dto.Compile.Testcase;
 import com.codingtext.codebankservice.Dto.LLM.LLMIdResponse;
 import com.codingtext.codebankservice.Dto.LLM.LLMRequestDTO;
@@ -44,11 +45,10 @@ public class CodeLLMController {
     // 히스토리 생성
     @Operation(summary = "GPT로 문제 생성/아직구현안됨", description = "GPT로 생성된 문제를 저장하는 역할을 수행 아직 사용불가 추후 개선")
     @PostMapping("/gpt/create")
-    public ResponseEntity<LLMIdResponse> createGptCode(@RequestBody LLMRequestDTO.codeGeneratingInfo request, @RequestHeader("UserId") String userId){
+    public ResponseEntity<LLMIdResponse> createGptCode(@RequestBody LLMResponseDTO.CodeGenerateClientResponse gptResponse, @RequestHeader("UserId") String userId){
 
         try {
-            ResponseEntity<LLMResponseDTO.CodeGenerateClientResponse> genrequest = llmServiceClient.codeGenerator(request);
-            LLMResponseDTO.CodeGenerateClientResponse gptResponse = genrequest.getBody();
+
             if (gptResponse == null) {
                 throw new IllegalStateException("GPT 응답이 비어 있습니다!");
             }
@@ -100,7 +100,7 @@ public class CodeLLMController {
             //CodeDto createdCode = codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
             //return ResponseEntity.ok(createdCode);
 
-            //무엇을 리턴?-> 생성된 문제 보여주기x,생성된 코드아이디+생성된 히스토리아이디 전달하기
+            //무엇을 리턴?-> 생성된 문제 보여주기x,생성된 코드아이디+생성된 히스토리아이디 전달하
             //에러분기-코드생성/저장 실패
             LLMIdResponse llmIdResponse = LLMIdResponse.builder()
                     .codeId(codeId)
