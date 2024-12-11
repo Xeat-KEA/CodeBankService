@@ -55,10 +55,19 @@ public class CodeCompileController {
         Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
 
         if (historyId.isPresent()) {
+
+            System.out.println("userId: "+userId);
+
             codeHistoryService.updateOrAddHistory(historyRequest, userId);
             int point = codeUserService.calculateUserPoint(userId);
+
+            System.out.println("point: "+point);
+
             UserPoint userPoint = new UserPoint(userId,point);
             userServiceClient.updateScore(userPoint);
+
+            System.out.println("userpoint: "+userPoint);
+
             //updateScore가 ok인 경우와 아닌경우로 error분기 나누기
             return ResponseEntity.ok("히스토리 저장 완료");
         } else {
