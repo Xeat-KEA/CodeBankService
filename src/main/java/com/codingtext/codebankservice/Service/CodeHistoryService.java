@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -127,11 +128,16 @@ public class CodeHistoryService {
                     .orElseThrow(() -> new EntityNotFoundException("해당 코드가 존재하지 않습니다."));
             // registerStatus에 따라 isCreatedByAi 값 설정
             boolean isCreatedByAi = RegisterStatus.CREATED.equals(code.getRegisterStatus());
+
+            String decodedContent;
+            byte[] decodedBytes = Base64.getDecoder().decode(historyRequest.getWrittenCode());
+            decodedContent = new String(decodedBytes);
+
             // 새로운 CodeHistory 생성
             CodeHistory codeHistory = CodeHistory.builder()
                     .code(code) // Code 엔티티 설정
                     .userId(userId)
-                    .writtenCode(historyRequest.getWrittenCode()) // 초기에는 작성된 코드가 없음,문제를 컴파일안하고 바로 제출할경우
+                    .writtenCode(decodedContent) // 초기에는 작성된 코드가 없음,문제를 컴파일안하고 바로 제출할경우
                     .isCorrect(historyRequest.getIsCorrect()) // 초기 상태는 정답이 아님,문제를 컴파일안하고 바로 제출할경우
                     .isCreatedByAI(isCreatedByAi) // AI 문제 여부 초기화
                     .createdAt(LocalDateTime.now()) // 생성 시간
