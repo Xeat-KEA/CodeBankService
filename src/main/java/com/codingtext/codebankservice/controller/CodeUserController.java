@@ -29,7 +29,7 @@ public class CodeUserController {
         return ResponseEntity.ok(userPoint);
     }
     @Operation(summary = "특정유저 히스토리 전부삭제", description = "유저아이디 기반으로 히스토리를 삭제한다-탈퇴용")
-    @DeleteMapping ("/delete")
+    @DeleteMapping()
     public ResponseEntity<String> DeleteHistory(@RequestHeader("UserId") String userId) {
         codeHistoryRepository.deleteByUserId(userId);
         return ResponseEntity.ok("해당 유저아이디의 히스토리를 삭제했습니다");
