@@ -3,6 +3,7 @@ package com.codingtext.codebankservice.controller;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Dto.Compile.Testcase;
+import com.codingtext.codebankservice.Dto.LLM.LLMIdResponse;
 import com.codingtext.codebankservice.Dto.LLM.LLMRequestDTO;
 import com.codingtext.codebankservice.Dto.LLM.LLMResponseDTO;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
@@ -43,7 +44,7 @@ public class CodeLLMController {
     // 히스토리 생성
     @Operation(summary = "GPT로 문제 생성/아직구현안됨", description = "GPT로 생성된 문제를 저장하는 역할을 수행 아직 사용불가 추후 개선")
     @PostMapping("/gpt/create")
-    public ResponseEntity<CodeDto> createGptCode(@RequestBody LLMRequestDTO.codeGeneratingInfo request, @RequestHeader("UserId") String userId){
+    public ResponseEntity<LLMIdResponse> createGptCode(@RequestBody LLMRequestDTO.codeGeneratingInfo request, @RequestHeader("UserId") String userId){
 
         try {
             ResponseEntity<LLMResponseDTO.CodeGenerateClientResponse> genrequest = llmServiceClient.codeGenerator(request);
@@ -99,13 +100,18 @@ public class CodeLLMController {
             //CodeDto createdCode = codeService.createGptGeneratedCode(codedto.getTitle(), codedto.getContent(), codedto.getAlgorithm(), codedto.getDifficulty());
             //return ResponseEntity.ok(createdCode);
 
-            //무엇을 리턴?-> 생성된 문제 보여주기
+            //무엇을 리턴?-> 생성된 문제 보여주기x,생성된 코드아이디+생성된 히스토리아이디 전달하기
             //에러분기-코드생성/저장 실패
-            return ResponseEntity.ok(createdCode);
+            LLMIdResponse llmIdResponse = LLMIdResponse.builder()
+                    .codeId(codeId)
+                    .historyId(hisId)
+                    .build();
+
+            return ResponseEntity.ok(llmIdResponse);
 
         } catch (Exception e) {
             CodeDto emptyCode = new CodeDto();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emptyCode);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
