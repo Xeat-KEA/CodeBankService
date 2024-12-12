@@ -168,7 +168,7 @@ public class CodeAdminController {
         RegisterRequestDto registerRequestDto = RegisterRequestDto.builder()
                 .title(codeHistory.getCode().getTitle())
                 .userId(codeHistory.getUserId())
-                .register(true)
+                .admit(true)
                 .build();
         blogServiceClient.saveCodeNotice(registerRequestDto);
         return ResponseEntity.ok("문제가 성공적으로 등록되었습니다.");
@@ -190,7 +190,7 @@ public class CodeAdminController {
                 RegisterRequestDto registerRequestDto = RegisterRequestDto.builder()
                         .title(codeHistory.getCode().getTitle())
                         .userId(codeHistory.getUserId())
-                        .register(false)
+                        .admit(false)
                         .build();
                 blogServiceClient.saveCodeNotice(registerRequestDto);
                 return new ResponseEntity<>("승인거부됨", HttpStatus.OK);

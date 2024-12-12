@@ -10,5 +10,5 @@ import lombok.*;
 public class RegisterRequestDto {
     private String userId;
     private String title;
-    private boolean register;
+    private boolean admit;
 }
