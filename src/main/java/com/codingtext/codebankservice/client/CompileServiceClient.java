@@ -14,7 +14,7 @@ public interface CompileServiceClient {
     @PostMapping("/code")
     void saveCode(@RequestBody CodeIdWithTestcases codeIdWithTestcases);
 
-    @DeleteMapping("/code/submit/{id}")
+    @DeleteMapping("/code/{id}")
     void removeCode(@PathVariable Integer id);
 
     @GetMapping("/code/{id}")

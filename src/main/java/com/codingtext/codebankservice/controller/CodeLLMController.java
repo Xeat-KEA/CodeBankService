@@ -106,7 +106,7 @@ public class CodeLLMController {
                     .codeId(codeId)
                     .historyId(hisId)
                     .build();
-            
+
             System.out.println("data: "+llmIdResponse);
 
             return ResponseEntity.ok(llmIdResponse);
