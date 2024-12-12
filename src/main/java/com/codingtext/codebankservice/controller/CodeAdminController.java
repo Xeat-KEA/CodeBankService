@@ -168,6 +168,7 @@ public class CodeAdminController {
         RegisterRequestDto registerRequestDto = RegisterRequestDto.builder()
                 .title(codeHistory.getCode().getTitle())
                 .userId(codeHistory.getUserId())
+                .register(true)
                 .build();
         blogServiceClient.saveCodeNotice(registerRequestDto);
         return ResponseEntity.ok("문제가 성공적으로 등록되었습니다.");
@@ -179,13 +180,22 @@ public class CodeAdminController {
     @Operation(summary = "문제 정식등록 요청 거부후 상태저장", description = "ai를 통해 생성한 문제를 정식등록하기위해 보낸 요청의 답을 받아 응답하기")
     @PutMapping("/register/{codeId}/refused")
     public ResponseEntity<String> refuseRegisterStatus(@PathVariable Long codeId){
+        Long hisId = codeHistoryRepository.findCodeHistoryIdByCodeId(codeId);
+        CodeHistory codeHistory = codeHistoryRepository.findCodeHistoryByCode_CodeId(codeId);
         try {
             if (codeRepository.existsByCodeIdAndRegisterStatus(codeId, RegisterStatus.REQUESTED)) {
                 codeRepository.updateRegisterStatusById(codeId, RegisterStatus.CREATED);//승인실패로 requested->created
                 //compileServiceClient.createCompileData(codeId);//어드민에서 컴파일서버에서 테스트케이스 업데이트한경우 적용하기위함
+                //블로그로 알림전송
+                RegisterRequestDto registerRequestDto = RegisterRequestDto.builder()
+                        .title(codeHistory.getCode().getTitle())
+                        .userId(codeHistory.getUserId())
+                        .register(false)
+                        .build();
+                blogServiceClient.saveCodeNotice(registerRequestDto);
                 return new ResponseEntity<>("승인거부됨", HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("해당 ID의 문제가 없습니다.", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("해당 ID의 문제가 없거나 등록중인 상태가 아닙니다", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             return new ResponseEntity<>("문제 업데이트 중 오류 발생", HttpStatus.BAD_REQUEST);
