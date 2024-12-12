@@ -63,6 +63,8 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
 
     Optional<CodeHistory> findByUserIdAndCode(String userId, Code code);
 
+    //CodeHistory findCodeHistoryByUserIdAndCode_CodeId(String userId,Long codeId);
+
     void deleteAllByCodeNotIn(List<Code> codes);
 
     //히스토리아이디 탐색

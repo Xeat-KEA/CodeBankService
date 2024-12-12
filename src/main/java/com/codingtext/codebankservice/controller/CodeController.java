@@ -1,14 +1,16 @@
 package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeWithHistoryAndHistoryId;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeService;
 //import com.codingtext.codebankservice.Util.JwtUtil;
 import com.codingtext.codebankservice.client.BaseResponse;
 import com.codingtext.codebankservice.client.CompileServiceClient;
+import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.entity.RegisterStatus;
-import com.codingtext.codebankservice.repository.CodeRepository;
+import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class CodeController {
     private final CodeService codeService;
     private final CompileServiceClient compileServiceClient;
     private final CodeHistoryService codeHistoryService;
+    private final CodeHistoryRepository codeHistoryRepository;
 
     @Operation(summary = "feignclient test용도", description = "컴파일서비에서 codeId에 따른 테스트케이스 조회")
     @GetMapping("/open/{codeId}")
@@ -80,7 +83,7 @@ public class CodeController {
     //만약 created면 가져오지 않기
     @Operation(summary = "특정 문제 조회-로그인 유저 전용", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
-    public ResponseEntity<?> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
+    public ResponseEntity<CodeWithHistoryAndHistoryId> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
 
             // 히스토리 ID 조회
             // 히스토리가 없으면 생성
@@ -93,32 +96,51 @@ public class CodeController {
             // 문제 상태가 created인 문제는 불러오면 안됨
             // requested인 상태도 안됨
             // 정식등록된 문제만
+            // 히스토리가 있다 -> 또 풀러왔네? -> 기존에 풀던 내용 넘기기
+            // 히스토리가 없다 -> 처음이네? -> 히스토리생성
            if(registerStatus == RegisterStatus.REGISTERED) {
                CodeDto code = codeService.getCodeById(codeId);
                String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
-               code = code.toBuilder()
-                       .content(encodedContent)
-                       .build();
-               if (historyId.isPresent()) {
-                   // 히스토리가 있으면 코드 정보 반환
+//               code = code.toBuilder()
+//                       .content(encodedContent)
+//                       .build();
 
+               if (historyId.isPresent()) {
+                   // 또 풀러왔네
+                   // 히스토리가 있으면 코드 정보 반환 + 기존에 풀었던 내용도 주기(히스토리)
+                   Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId,codeId);
                    System.out.println("sucess historyid=" + historyId);
-                   return ResponseEntity.ok(code);
+                   //llm서비스 채팅내역도 요청?
+                   CodeWithHistoryAndHistoryId codeWithHistoryAndHistoryId = CodeWithHistoryAndHistoryId.builder()
+                           .code_Content(encodedContent)
+                           .codeHistory_writtenCode(codeHistory.get().getWrittenCode())
+                           .historyId(codeHistory.get().getCodeHistoryId())
+                           .build();
+
+                   return ResponseEntity.ok(codeWithHistoryAndHistoryId);
+
                } else if (historyId.isEmpty()) {
-                   // 히스토리가 없으면 생성 후 코드 정보 반환
+                   // 처음이네
+                   // 히스토리가 없으면 생성 후 코드 정보 반환 + 생성된 히스토리 내용 반환
                    System.out.println("sucess but no historyid=" + historyId);
                    //히스토리 생성후 히스토리아이디 반환
                    Long newHistoryId = codeHistoryService.createContentEmptyHistory(userId, codeId);
+                   Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId,codeId);
+                   CodeWithHistoryAndHistoryId codeWithHistoryAndHistoryId = CodeWithHistoryAndHistoryId.builder()
+                           .code_Content(encodedContent)
+                           .codeHistory_writtenCode(codeHistory.get().getWrittenCode())
+                           .historyId(newHistoryId)
+                           .build();
                    //CodeDto code = codeService.getCodeById(codeId);
-                   return ResponseEntity.ok(code);
+                   return ResponseEntity.ok(codeWithHistoryAndHistoryId);
                }
                //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
                else {
                    System.out.println("대실패 userid=" + userId);
-                   return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제를 처리하는 동안 오류가 발생했습니다.");
+                   return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
                }
            }else{
-               return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("정식등록되지않은 문제입니다.");
+               return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
            }
 
     }
