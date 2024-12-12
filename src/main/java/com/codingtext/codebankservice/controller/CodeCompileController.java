@@ -52,9 +52,9 @@ public class CodeCompileController {
         Long codeId = historyRequest.getCodeId();
         boolean Correct = historyRequest.getIsCorrect();
 
-        Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
+        //Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
 
-        if (historyId.isPresent()) {
+        if (userId != null) {
 
             System.out.println("userId: "+userId);
 
