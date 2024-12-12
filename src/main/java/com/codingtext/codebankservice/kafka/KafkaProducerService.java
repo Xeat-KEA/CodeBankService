@@ -1,6 +1,5 @@
 package com.codingtext.codebankservice.kafka;
 
-package com.codingtext.codebankservice.kafka;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
