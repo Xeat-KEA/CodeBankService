@@ -1,8 +1,11 @@
 package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.Blog.RegisterRequestDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeWithHistoryAndHistoryId;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
+import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.BlogServiceClient;
 import com.codingtext.codebankservice.entity.*;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
@@ -18,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +35,7 @@ public class CodeHistoryController {
     private final CodeHistoryService codeHistoryService;
     private final CustomRepository customRepository;
     private final BlogServiceClient blogServiceClient;
+    private final CodeService codeService;
 
 
     //코드히스토리 아이디를 조회하는 기능
@@ -73,13 +78,21 @@ public class CodeHistoryController {
         return ResponseEntity.ok(histories);
     }
     //유저가 기존에 풀던 또는 풀었던 문제와 내용을 보여줌
+    // 코드랑 히스토리 둘다 반환
+    // registered가 아닌 모든 푼 문제를 조회하기위해 필요함 code/lists/{codeId}와 구분해서 사용
     @Operation(summary = "풀던|이미푼 문제 이어풀기", description = "기존에 풀던 문제또는 이미 해결한 문제를 히스토리에서 불러옴")
     @GetMapping("/user/{codeId}")
-    public ResponseEntity<CodeHistoryDto> getHistoryById(
+    public ResponseEntity<CodeWithHistoryAndHistoryId> getHistoryById(
             @PathVariable Long codeId, @RequestHeader("UserId") String userId) {
+
+
+//               code = code.toBuilder()
+//                       .content(encodedContent)
+//                       .build();
 
         // codeId로 Code 객체 조회
         Code code = codeRepository.findById(codeId).orElse(null);
+        String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
 
         if (code == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Code가 없으면 404 반환
@@ -90,9 +103,18 @@ public class CodeHistoryController {
 
         // codeHistoryDto가 null인지 확인하고 상태에 맞는 응답 반환
         if (codeHistoryDto != null) {
-            return ResponseEntity.ok(codeHistoryDto); // codeHistoryDto가 존재하면 200 OK와 함께 반환
+            CodeWithHistoryAndHistoryId codeWithHistoryAndHistoryId = CodeWithHistoryAndHistoryId.builder()
+                    .code_Content(encodedContent)
+                    .codeHistory_writtenCode(codeHistoryDto.getWrittenCode())
+                    .historyId(codeHistoryDto.getCodeHistoryId())
+                    .build();
+
+            return ResponseEntity.ok(codeWithHistoryAndHistoryId); // codeHistoryDto가 존재하면 200 OK와 함께 반환
+
         } else {
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // codeHistoryDto가 없으면 404 반환
+
         }
     }
     //정식등록요청(codebank->admin)
