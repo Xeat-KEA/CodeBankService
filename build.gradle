@@ -56,6 +56,8 @@ dependencies {
 	//그라파나,프로메테우스
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+	//카프카
+	implementation 'org.springframework.kafka:spring-kafka'
 
 
 
