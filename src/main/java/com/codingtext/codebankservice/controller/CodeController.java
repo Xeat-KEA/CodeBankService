@@ -110,10 +110,11 @@ public class CodeController {
                    // 히스토리가 있으면 코드 정보 반환 + 기존에 풀었던 내용도 주기(히스토리)
                    Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId,codeId);
                    System.out.println("sucess historyid=" + historyId);
+                   String encodedWrittenCode = Base64.getEncoder().encodeToString(codeHistory.get().getWrittenCode().getBytes());
                    //llm서비스 채팅내역도 요청?
                    CodeWithHistoryAndHistoryId codeWithHistoryAndHistoryId = CodeWithHistoryAndHistoryId.builder()
                            .code_Content(encodedContent)
-                           .codeHistory_writtenCode(codeHistory.get().getWrittenCode())
+                           .codeHistory_writtenCode(encodedWrittenCode)
                            .historyId(codeHistory.get().getCodeHistoryId())
                            .build();
 
@@ -126,9 +127,10 @@ public class CodeController {
                    //히스토리 생성후 히스토리아이디 반환
                    Long newHistoryId = codeHistoryService.createContentEmptyHistory(userId, codeId);
                    Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId,codeId);
+                   String encodedWrittenCode = Base64.getEncoder().encodeToString(codeHistory.get().getWrittenCode().getBytes());
                    CodeWithHistoryAndHistoryId codeWithHistoryAndHistoryId = CodeWithHistoryAndHistoryId.builder()
                            .code_Content(encodedContent)
-                           .codeHistory_writtenCode(codeHistory.get().getWrittenCode())
+                           .codeHistory_writtenCode(encodedWrittenCode)
                            .historyId(newHistoryId)
                            .build();
                    //CodeDto code = codeService.getCodeById(codeId);

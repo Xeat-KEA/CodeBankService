@@ -51,6 +51,8 @@ public interface CodeHistoryRepository extends JpaRepository<CodeHistory, Long> 
     @Query("SELECT h.codeHistoryId FROM CodeHistory h WHERE h.code.codeId = :codeId")
     Long findCodeHistoryIdByCodeId(@Param("codeId") Long codeId);
 
+    CodeHistory findCodeHistoryByCode_CodeId(Long codeId);
+
     //String findUserIdByCodeHistoryId(Long codeHistoryId);
     @Query("SELECT h.userId FROM CodeHistory h WHERE h.codeHistoryId = :codeHistoryId")
     String findUserIdByCodeHistoryId(@Param("codeHistoryId") Long codeHistoryId);

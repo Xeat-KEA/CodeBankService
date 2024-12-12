@@ -15,9 +15,7 @@ import com.codingtext.codebankservice.repository.CodeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.client.params.ClientPNames;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -68,8 +66,16 @@ public class CodeAdminService {
 
     @Transactional
     public Page<CodeWithTestcasesAndNickName> getPendingCodesWithTestcases(Pageable pageable) {
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt") // 내림차순 정렬
+        );
+
+
         // 승인 대기 중인 문제들을 페이지네이션으로 조회
-        Page<Code> pendingCodes = codeRepository.findByRegisterStatus(RegisterStatus.REQUESTED, pageable);
+        //Page<Code> pendingCodes = codeRepository.findByRegisterStatus(RegisterStatus.REQUESTED, pageable);
+        Page<Code> pendingCodes = codeRepository.findByRegisterStatus(RegisterStatus.REQUESTED, sortedPageable);
 
         // 각 문제에 대해 컴파일 서버에서 Testcase 리스트를 가져와 CodeWithTestcases로 변환
         List<CodeWithTestcasesAndNickName> codeWithTestcasesList = pendingCodes.getContent().stream()

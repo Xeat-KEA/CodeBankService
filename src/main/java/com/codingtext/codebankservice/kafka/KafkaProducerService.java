@@ -1,16 +1,20 @@
 package com.codingtext.codebankservice.kafka;
 
 
+import com.codingtext.codebankservice.Dto.User.UserPoint;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 public class KafkaProducerService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
+
+
 
     public KafkaProducerService(KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
@@ -29,4 +33,5 @@ public class KafkaProducerService {
             }
         });
     }
+
 }

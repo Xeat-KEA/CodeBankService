@@ -5,6 +5,7 @@ import com.codingtext.codebankservice.Dto.User.UserPoint;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeUserService;
 import com.codingtext.codebankservice.client.UserServiceClient;
+import com.codingtext.codebankservice.kafka.UserPointProducer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,7 @@ public class CodeCompileController {
     private final CodeHistoryService codeHistoryService;
     private final CodeUserService codeUserService;
     private final UserServiceClient userServiceClient;
+    private  final UserPointProducer userPointProducer;
 
     @Operation(summary = "문제 풀이 히스토리 저장 또는 갱신", description = "유저가 문제를 컴파일하면 해당 문제를 히스토리에 저장하거나 이미 기록이있을경 시간 갱신")
     @PostMapping("/com")
@@ -55,28 +57,46 @@ public class CodeCompileController {
         //Optional<Long> historyId = codeHistoryService.getHistoryId(userId, codeId);
 
         if (userId != null) {
+            try {
 
-            System.out.println("userId: "+userId);
+                System.out.println("userId: " + userId);
 
-            codeHistoryService.updateOrAddHistory(historyRequest, userId);
-            //유저의 종합점수
-            int point = codeUserService.calculateUserPoint(userId);
-            //유저가 registered중 문제를 맞춘횟수
-            int count = codeUserService.calculateUserCount(userId);
+                codeHistoryService.updateOrAddHistory(historyRequest, userId);
+                //유저의 종합점수
+                int point = codeUserService.calculateUserPoint(userId);
+                //유저가 registered중 문제를 맞춘횟수
+                int count = codeUserService.calculateUserCount(userId);
 
-            System.out.println("point: "+point);
+                System.out.println("point: " + point);
 
-            UserPoint userPoint = new UserPoint(userId,point,count);
+                UserPoint userPoint = new UserPoint(userId, point, count);
 
-            System.out.println("userpoint: "+userPoint);
+                System.out.println("userpoint: " + userPoint);
 
-            userServiceClient.updateScore(userPoint);
+                ResponseEntity<UserPoint> userPoint1 = userServiceClient.updateScore(userPoint);
 
+                // user가 실패할경우
+                // userPoint1 != userPoint
 
+                //updateScore가 ok인 경우와 아닌경우로 error분기 나누기
+                return ResponseEntity.ok("히스토리 저장 완료");
+            }catch (Exception ex) {
+                System.err.println("Error occurred: " + ex.getMessage());
 
-            //updateScore가 ok인 경우와 아닌경우로 error분기 나누기
-            return ResponseEntity.ok("히스토리 저장 완료");
-        } else {
+                try {
+                    // Kafka 롤백 이벤트 발행
+
+                    //userPointProducer.sendUserPoint(userId,userPoint1);
+                    System.out.println("Rollback event published to Kafka");
+                } catch (Exception kafkaEx) {
+                    System.err.println("Failed to publish rollback event: " + kafkaEx.getMessage());
+                }
+
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("히스토리 저장 실패: " + ex.getMessage());
+            }
+
+        }else{
             // 히스토리가 없으면 null 반환
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을수없음");
         }

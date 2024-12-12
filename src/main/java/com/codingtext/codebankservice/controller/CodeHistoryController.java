@@ -103,9 +103,10 @@ public class CodeHistoryController {
 
         // codeHistoryDto가 null인지 확인하고 상태에 맞는 응답 반환
         if (codeHistoryDto != null) {
+            String encodedWrittenCode = Base64.getEncoder().encodeToString(codeHistoryDto.getWrittenCode().getBytes());
             CodeWithHistoryAndHistoryId codeWithHistoryAndHistoryId = CodeWithHistoryAndHistoryId.builder()
                     .code_Content(encodedContent)
-                    .codeHistory_writtenCode(codeHistoryDto.getWrittenCode())
+                    .codeHistory_writtenCode(encodedWrittenCode)
                     .historyId(codeHistoryDto.getCodeHistoryId())
                     .build();
 
@@ -140,7 +141,7 @@ public class CodeHistoryController {
                         .title(code.getTitle())
                         .build();
                 //블로그로 알람을 위한 정보전달
-                blogServiceClient.saveCodeNotice(registerRequestDto);
+                //blogServiceClient.saveCodeNotice(registerRequestDto);
                 //전송성공
                 //전송성공시 뭘해야 user에게 알릴수있을까?
                 //전송할때 유저 아이디 동봉해서 보내기x 상세코드를 열람할때 userid를 찾아서 보내기

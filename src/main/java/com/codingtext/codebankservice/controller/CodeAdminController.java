@@ -16,6 +16,7 @@ import com.codingtext.codebankservice.client.BlogServiceClient;
 import com.codingtext.codebankservice.client.CompileServiceClient;
 import com.codingtext.codebankservice.client.UserServiceClient;
 import com.codingtext.codebankservice.entity.Code;
+import com.codingtext.codebankservice.entity.CodeHistory;
 import com.codingtext.codebankservice.entity.RegisterStatus;
 import com.codingtext.codebankservice.repository.CodeHistoryRepository;
 import com.codingtext.codebankservice.repository.CodeRepository;
@@ -122,7 +123,9 @@ public class CodeAdminController {
     public ResponseEntity<String> updateRegisterStatus(
             @PathVariable Long codeId,
             @RequestBody CodeWithTestcasesForEdit codeWithTestcasesForEdit) {
-
+        //코드아이디->히스토리검색->유저아이디탐색->title+userid반환
+        Long hisId = codeHistoryRepository.findCodeHistoryIdByCodeId(codeId);
+        CodeHistory codeHistory = codeHistoryRepository.findCodeHistoryByCode_CodeId(codeId);
         // 어드민 서비스 응답 데이터 검증
         if (codeWithTestcasesForEdit == null || codeWithTestcasesForEdit.getTestcases() == null || codeWithTestcasesForEdit.getContent() == null) {
             return ResponseEntity.badRequest().body("유효하지 않은 어드민 서비스 응답입니다.");
@@ -162,7 +165,11 @@ public class CodeAdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("문제 데이터 업데이트 실패");
         }
         //블로그로 알림전송
-
+        RegisterRequestDto registerRequestDto = RegisterRequestDto.builder()
+                .title(codeHistory.getCode().getTitle())
+                .userId(codeHistory.getUserId())
+                .build();
+        blogServiceClient.saveCodeNotice(registerRequestDto);
         return ResponseEntity.ok("문제가 성공적으로 등록되었습니다.");
     }
 
