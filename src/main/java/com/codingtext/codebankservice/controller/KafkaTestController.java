@@ -16,6 +16,7 @@ public class KafkaTestController {
 
     @GetMapping("/sendMessage")
     public String sendMessage(@RequestParam String topic, @RequestParam String key, @RequestParam String message) {
+
         kafkaProducerService.sendMessage(topic, key, message);
         return "Message sent to Kafka topic: " + topic;
     }
