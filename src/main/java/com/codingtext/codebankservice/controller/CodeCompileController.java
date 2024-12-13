@@ -73,8 +73,8 @@ public class CodeCompileController {
 
                 System.out.println("userpoint: " + userPoint);
 
-                ResponseEntity<UserPoint> userPoint1 = userServiceClient.updateScore(userPoint);
-                System.out.println("userpoint:"+userPoint1.toString());
+                userServiceClient.updateScore(userPoint);
+
                 // user가 실패할경우
                 // userPoint1 != userPoint
 
