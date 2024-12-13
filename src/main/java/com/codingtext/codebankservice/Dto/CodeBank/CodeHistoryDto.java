@@ -1,6 +1,7 @@
 package com.codingtext.codebankservice.Dto.CodeBank;
 
 import com.codingtext.codebankservice.entity.CodeHistory;
+import com.codingtext.codebankservice.entity.Difficulty;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
@@ -24,6 +25,7 @@ public class CodeHistoryDto {
     private LocalDateTime compiledAt;
     //문제이름 히스토리 표시용
     private String codeTitle;
+
 
 
     public static CodeHistoryDto ToDto(CodeHistory history) {

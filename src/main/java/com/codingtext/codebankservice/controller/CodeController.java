@@ -1,7 +1,7 @@
 package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
-import com.codingtext.codebankservice.Dto.CodeBank.CodeContentWithHistoryAndHistoryIdAndIsCorrect;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty;
 import com.codingtext.codebankservice.Dto.Compile.CodeIdWithTestcases;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeService;
@@ -83,7 +83,7 @@ public class CodeController {
     //만약 created면 가져오지 않기
     @Operation(summary = "특정 문제 조회-로그인 유저 전용", description = "특정 문제의 상세 정보를 조회")
     @GetMapping("/lists/{codeId}")
-    public ResponseEntity<CodeContentWithHistoryAndHistoryIdAndIsCorrect> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
+    public ResponseEntity<CodeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty> getCodeById(@PathVariable Long codeId, @RequestHeader("UserId") String userId) {
 
             // 히스토리 ID 조회
             // 히스토리가 없으면 생성
@@ -112,14 +112,15 @@ public class CodeController {
                    System.out.println("sucess historyid=" + historyId);
                    String encodedWrittenCode = Base64.getEncoder().encodeToString(codeHistory.get().getWrittenCode().getBytes());
                    //llm서비스 채팅내역도 요청?
-                   CodeContentWithHistoryAndHistoryIdAndIsCorrect codeContentWithHistoryAndHistoryIdAndIsCorrect = CodeContentWithHistoryAndHistoryIdAndIsCorrect.builder()
+                   CodeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty codeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty = CodeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty.builder()
                            .code_Content(encodedContent)
                            .codeHistory_writtenCode(encodedWrittenCode)
                            .historyId(codeHistory.get().getCodeHistoryId())
                            .isCorrect(codeHistory.get().getIsCorrect())
+                           .difficulty(codeHistory.get().getCode().getDifficulty())
                            .build();
 
-                   return ResponseEntity.ok(codeContentWithHistoryAndHistoryIdAndIsCorrect);
+                   return ResponseEntity.ok(codeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty);
 
                } else if (historyId.isEmpty()) {
                    // 처음이네
@@ -129,14 +130,14 @@ public class CodeController {
                    Long newHistoryId = codeHistoryService.createContentEmptyHistory(userId, codeId);
                    Optional<CodeHistory> codeHistory = codeHistoryRepository.findCodeHistoryByUserIdAndCode_CodeId(userId,codeId);
                    String encodedWrittenCode = Base64.getEncoder().encodeToString(codeHistory.get().getWrittenCode().getBytes());
-                   CodeContentWithHistoryAndHistoryIdAndIsCorrect codeContentWithHistoryAndHistoryIdAndIsCorrect = CodeContentWithHistoryAndHistoryIdAndIsCorrect.builder()
+                   CodeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty codeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty = CodeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty.builder()
                            .code_Content(encodedContent)
                            .codeHistory_writtenCode(encodedWrittenCode)
                            .historyId(newHistoryId)
                            .isCorrect(codeHistory.get().getIsCorrect())
                            .build();
                    //CodeDto code = codeService.getCodeById(codeId);
-                   return ResponseEntity.ok(codeContentWithHistoryAndHistoryIdAndIsCorrect);
+                   return ResponseEntity.ok(codeContentWithHistoryAndHistoryIdAndIsCorrectAndDifficulty);
                }
                //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 코드가 존재하지 않습니다.");
                else {
