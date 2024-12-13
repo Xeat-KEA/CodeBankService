@@ -74,7 +74,7 @@ public class CodeCompileController {
                 System.out.println("userpoint: " + userPoint);
 
                 ResponseEntity<UserPoint> userPoint1 = userServiceClient.updateScore(userPoint);
-
+                System.out.println("userpoint:"+userPoint1.toString());
                 // user가 실패할경우
                 // userPoint1 != userPoint
 
@@ -83,15 +83,6 @@ public class CodeCompileController {
                 return ResponseEntity.ok("히스토리 저장 완료");
             }catch (Exception ex) {
                 System.err.println("Error occurred: " + ex.getMessage());
-
-                try {
-                    // Kafka 롤백 이벤트 발행
-
-                    //userPointProducer.sendUserPoint(userId,userPoint1);
-                    System.out.println("Rollback event published to Kafka");
-                } catch (Exception kafkaEx) {
-                    System.err.println("Failed to publish rollback event: " + kafkaEx.getMessage());
-                }
 
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("히스토리 저장 실패: " + ex.getMessage());
