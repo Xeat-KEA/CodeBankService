@@ -78,6 +78,7 @@ public class CodeCompileController {
                 // user가 실패할경우
                 // userPoint1 != userPoint
 
+
                 //updateScore가 ok인 경우와 아닌경우로 error분기 나누기
                 return ResponseEntity.ok("히스토리 저장 완료");
             }catch (Exception ex) {

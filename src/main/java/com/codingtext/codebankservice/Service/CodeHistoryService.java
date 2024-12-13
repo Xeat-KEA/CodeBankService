@@ -115,10 +115,13 @@ public class CodeHistoryService {
         CodeHistory history = codeHistoryRepository.findByCode_CodeIdAndUserId(historyRequest.getCodeId(), historyRequest.getUserId());
 
         if (history != null && history.getCodeHistoryId() != null) {
+            String decodedContent;
+            byte[] decodedBytes = Base64.getDecoder().decode(historyRequest.getWrittenCode());
+            decodedContent = new String(decodedBytes);
             // 풀이 기록이 있으면 compiledAt,작성코드내용,정답여부 갱신
             //CodeHistory existingHistory = history.get();
             history.setCompiledAt(LocalDateTime.now());
-            history.setWrittenCode(historyRequest.getWrittenCode());
+            history.setWrittenCode(decodedContent);
             history.setIsCorrect(historyRequest.getIsCorrect());
             codeHistoryRepository.save(history);
         } else {

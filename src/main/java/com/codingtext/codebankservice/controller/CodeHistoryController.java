@@ -1,9 +1,8 @@
 package com.codingtext.codebankservice.controller;
 
 import com.codingtext.codebankservice.Dto.Blog.RegisterRequestDto;
-import com.codingtext.codebankservice.Dto.CodeBank.CodeDto;
 import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
-import com.codingtext.codebankservice.Dto.CodeBank.CodeWithHistoryAndHistoryId;
+import com.codingtext.codebankservice.Dto.CodeBank.CodeContentWithHistoryAndHistoryIdAndIsCorrect;
 import com.codingtext.codebankservice.Service.CodeHistoryService;
 import com.codingtext.codebankservice.Service.CodeService;
 import com.codingtext.codebankservice.client.BlogServiceClient;
@@ -82,7 +81,7 @@ public class CodeHistoryController {
     // registered가 아닌 모든 푼 문제를 조회하기위해 필요함 code/lists/{codeId}와 구분해서 사용
     @Operation(summary = "풀던|이미푼 문제 이어풀기", description = "기존에 풀던 문제또는 이미 해결한 문제를 히스토리에서 불러옴")
     @GetMapping("/user/{codeId}")
-    public ResponseEntity<CodeWithHistoryAndHistoryId> getHistoryById(
+    public ResponseEntity<CodeContentWithHistoryAndHistoryIdAndIsCorrect> getHistoryById(
             @PathVariable Long codeId, @RequestHeader("UserId") String userId) {
 
 
@@ -104,13 +103,14 @@ public class CodeHistoryController {
         // codeHistoryDto가 null인지 확인하고 상태에 맞는 응답 반환
         if (codeHistoryDto != null) {
             String encodedWrittenCode = Base64.getEncoder().encodeToString(codeHistoryDto.getWrittenCode().getBytes());
-            CodeWithHistoryAndHistoryId codeWithHistoryAndHistoryId = CodeWithHistoryAndHistoryId.builder()
+            CodeContentWithHistoryAndHistoryIdAndIsCorrect codeContentWithHistoryAndHistoryIdAndIsCorrect = CodeContentWithHistoryAndHistoryIdAndIsCorrect.builder()
                     .code_Content(encodedContent)
                     .codeHistory_writtenCode(encodedWrittenCode)
                     .historyId(codeHistoryDto.getCodeHistoryId())
+                    .isCorrect(codeHistoryDto.getIsCorrect())
                     .build();
 
-            return ResponseEntity.ok(codeWithHistoryAndHistoryId); // codeHistoryDto가 존재하면 200 OK와 함께 반환
+            return ResponseEntity.ok(codeContentWithHistoryAndHistoryIdAndIsCorrect); // codeHistoryDto가 존재하면 200 OK와 함께 반환
 
         } else {
 
