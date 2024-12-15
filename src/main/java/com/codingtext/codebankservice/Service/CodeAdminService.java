@@ -89,6 +89,7 @@ public class CodeAdminService {
                     Long historyId = codeHistoryService.getAiHistoryId(codeId);
                     String userId = codeHistoryService.getUserId(historyId);
                     ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
+                    System.out.println("codeId: "+codeId);
                     System.out.println("userId: "+userId);
                     String nickname = userInfo.getBody().getNickName();
                     System.out.println("nickname: "+nickname);
