@@ -89,7 +89,9 @@ public class CodeAdminService {
                     Long historyId = codeHistoryService.getAiHistoryId(codeId);
                     String userId = codeHistoryService.getUserId(historyId);
                     ResponseEntity<UserInfoDto> userInfo = userServiceClient.getUserInfo(userId);
+                    System.out.println("userId: "+userId);
                     String nickname = userInfo.getBody().getNickName();
+                    System.out.println("nickname: "+nickname);
                     // content를 Base64로 인코딩
                     String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
 
