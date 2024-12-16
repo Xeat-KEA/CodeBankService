@@ -102,26 +102,26 @@ public class CodeService {
 
 
 
-    // 문제 삭제 스케줄러
-    @Transactional
-    @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
-    //@Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복
-    public void deleteUnusedCreatedCodes() {
-        LocalDateTime threshold = LocalDateTime.now().minusHours(24); // 24시간이 지난 걸 확인하기위한 기준
-
-        // created 상태 + 생성된 지 24시간 + history에 기록이 없는 문제들 조회
-        List<Code> codesToDelete = codeRepository.findByRegisterStatusAndCreatedAtBefore(RegisterStatus.CREATED, threshold);
-
-        // 필터링 history
-        codesToDelete = codesToDelete.stream()
-                .filter(code -> !codeHistoryRepository.existsByCode_CodeId(code.getCodeId()))
-                .toList();
-
-        if (!codesToDelete.isEmpty()) {
-            codeRepository.deleteAll(codesToDelete);
-            System.out.println("number of deleted problems: " + codesToDelete.size());//log용
-        }
-    }
+//    // 문제 삭제 스케줄러
+//    @Transactional
+//    @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
+//    //@Scheduled(initialDelay = 1000, fixedRate = 86400000)//서버 실행직후 1초후에 실행,매일 반복
+//    public void deleteUnusedCreatedCodes() {
+//        LocalDateTime threshold = LocalDateTime.now().minusHours(24); // 24시간이 지난 걸 확인하기위한 기준
+//
+//        // created 상태 + 생성된 지 24시간 + history에 기록이 없는 문제들 조회
+//        List<Code> codesToDelete = codeRepository.findByRegisterStatusAndCreatedAtBefore(RegisterStatus.CREATED, threshold);
+//
+//        // 필터링 history
+//        codesToDelete = codesToDelete.stream()
+//                .filter(code -> !codeHistoryRepository.existsByCode_CodeId(code.getCodeId()))
+//                .toList();
+//
+//        if (!codesToDelete.isEmpty()) {
+//            codeRepository.deleteAll(codesToDelete);
+//            System.out.println("number of deleted problems: " + codesToDelete.size());//log용
+//        }
+//    }
     public Page<Code> getPendingCodes(Pageable pageable) {
         return codeRepository.findByRegisterStatus("REQUESTED", pageable);
     }

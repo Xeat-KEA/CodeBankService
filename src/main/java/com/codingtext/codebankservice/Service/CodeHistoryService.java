@@ -169,13 +169,13 @@ public class CodeHistoryService {
 
     //code에서 삭제된 문제를 참조하는 history삭제
     // 주기적으로 참조되지 않는 history 삭제 - 매일 자정에 실행
-    @Scheduled(cron = "0 0 0 * * ?")
-    @Transactional
-    public void cleanUpOrphanedHistory() {
-        List<Code> validCodes = codeRepository.findAll();
-        codeHistoryRepository.deleteAllByCodeNotIn(validCodes);
-
-    }
+//    @Scheduled(cron = "0 0 0 * * ?")
+//    @Transactional
+//    public void cleanUpOrphanedHistory() {
+//        List<Code> validCodes = codeRepository.findAll();
+//        codeHistoryRepository.deleteAllByCodeNotIn(validCodes);
+//
+//    }
 
 
 
