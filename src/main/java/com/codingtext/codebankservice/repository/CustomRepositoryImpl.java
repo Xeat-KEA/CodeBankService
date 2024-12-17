@@ -40,7 +40,7 @@ public class CustomRepositoryImpl implements CustomRepository {
         // 필터 조건 설정
         if (registerStatus == null) {
             // REGISTERED 또는 PERMITTED 상태를 필터링
-            builder.and(code.registerStatus.in(RegisterStatus.REGISTERED, RegisterStatus.PERMITTED));
+            builder.and(code.registerStatus.in(RegisterStatus.REGISTERED));
         } else {
             builder.and(code.registerStatus.eq(registerStatus));
         }
