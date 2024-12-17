@@ -4,6 +4,7 @@ import com.codingtext.codebankservice.Dto.CodeBank.CodeHistoryDto;
 import com.codingtext.codebankservice.entity.*;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.Expressions;
 
 @Repository("customRepository")
 public class CustomRepositoryImpl implements CustomRepository {
@@ -31,76 +34,67 @@ public class CustomRepositoryImpl implements CustomRepository {
                                                    RegisterStatus registerStatus,
                                                    Pageable pageable) {
         QCode code = QCode.code;
+        QCodeHistory history = QCodeHistory.codeHistory;
         BooleanBuilder builder = new BooleanBuilder();
 
+        // 필터 조건 설정
         if (registerStatus != null) {
             builder.and(code.registerStatus.eq(registerStatus));
         }
-
-        // 알고리즘 필터 추가
-//        if (algorithms != null && !algorithms.isEmpty()) {
-//            builder.and(code.algorithm.in(algorithms.stream()
-//                    .map(Algorithm::valueOf)
-//                    .collect(Collectors.toList())));
-//        }
-        if(registerStatus == null){
-            registerStatus = RegisterStatus.REGISTERED;
-        }
-
         if (algorithms != null && !algorithms.isEmpty()) {
-            builder.and(code.algorithm.in(algorithms.stream()
+            List<Algorithm> algorithmEnums = algorithms.stream()
                     .map(algo -> {
                         try {
                             return Algorithm.valueOf(algo.trim().toUpperCase());
                         } catch (IllegalArgumentException e) {
-                            return null;
+                            return null; // 잘못된 Enum 값은 제외
                         }
                     })
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList())));
+                    .collect(Collectors.toList());
+            if (!algorithmEnums.isEmpty()) {
+                builder.and(code.algorithm.in(algorithmEnums));
+            }
         }
 
-        // 난이도 필터 추가
-//        if (difficulties != null && !difficulties.isEmpty()) {
-//            builder.and(code.difficulty.in(difficulties.stream()
-//                    .map(Difficulty::valueOf)
-//                    .collect(Collectors.toList())));
-//        }
         if (difficulties != null && !difficulties.isEmpty()) {
-            builder.and(code.difficulty.in(difficulties.stream()
+            List<Difficulty> difficultyEnums = difficulties.stream()
                     .map(diff -> {
                         try {
                             return Difficulty.valueOf(diff.trim().toUpperCase());
                         } catch (IllegalArgumentException e) {
-                            return null;
+                            return null; // 잘못된 Enum 값은 제외
                         }
                     })
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList())));
+                    .collect(Collectors.toList());
+            if (!difficultyEnums.isEmpty()) {
+                builder.and(code.difficulty.in(difficultyEnums));
+            }
         }
 
-        // 검색어 처리
         if (searchText != null && !searchText.isEmpty()) {
             if ("title".equalsIgnoreCase(searchBy)) {
                 builder.and(code.title.containsIgnoreCase(searchText));
             } else if ("codeId".equalsIgnoreCase(searchBy)) {
-                try {
-                    Long codeId = Long.parseLong(searchText);
-                    builder.and(code.codeId.eq(codeId));
-                } catch (NumberFormatException e) {
-                    builder.and(code.codeId.isNull());
-                }
+                builder.and(code.codeId.eq(Long.parseLong(searchText)));
             }
         }
-        System.out.println("Filters: " + builder.getValue());
-        System.out.println("Offset: " + pageable.getOffset());
-        System.out.println("Page size: " + pageable.getPageSize());
 
-        // 동적 정렬 조건 생성
-        OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortBy, code);
+        // 정답률 계산: Boolean 값을 1과 0으로 변환 후 합산
+        NumberExpression<Double> correctRate =
+                Expressions.numberTemplate(Double.class,
+                        "COALESCE(SUM(CASE WHEN {0} = true THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 0)",
+                        history.isCorrect);
 
+        // 정렬 조건
+        OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortBy, code, correctRate);
+
+        // 쿼리 실행
         List<Code> results = queryFactory.selectFrom(code)
+                .leftJoin(history).on(history.code.codeId.eq(code.codeId))
                 .where(builder)
+                .groupBy(code.codeId)
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -110,20 +104,19 @@ public class CustomRepositoryImpl implements CustomRepository {
                 .from(code)
                 .where(builder)
                 .fetchOne();
-        System.out.println("Results: " + results);
-        System.out.println("Total count: " + total);
 
         return new PageImpl<>(results, pageable, total);
     }
-    private OrderSpecifier<?> getOrderSpecifier(String sortBy, QCode code) {
-        if ("createdAt".equalsIgnoreCase(sortBy)) {
-            // sortBy가 createdAt인 경우 최신 등록된 문제 먼저
+
+    private OrderSpecifier<?> getOrderSpecifier(String sortBy, QCode code, NumberExpression<Double> correctRate) {
+        if ("correctRate".equalsIgnoreCase(sortBy)) {
+            return correctRate.desc(); // 정답률 내림차순
+        } else if ("createdAt".equalsIgnoreCase(sortBy)) {
             return code.createdAt.desc();
-        } else {
-            // 기본 정렬 조건: 가장 먼저 생성된 문제가 먼저
-            return code.createdAt.asc();
         }
+        return code.createdAt.asc(); // 기본 정렬
     }
+
     @Override
     public Page<CodeHistoryDto> findUserHistoriesWithFilterAndSearch(String userId,
                                                                      List<String> algorithms,

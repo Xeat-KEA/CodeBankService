@@ -148,7 +148,7 @@ public class CodeAdminService {
         return ResponseEntity.ok("Code updated successfully");
     }
 
-    public Long createCode(CodeWithTestcases codeWithTestcases){
+    public Long createRegisterCode(CodeWithTestcases codeWithTestcases){
         Code newCode = Code.builder()
                 .title(codeWithTestcases.getCode().getTitle())
                 .content(codeWithTestcases.getCode().getContent())
