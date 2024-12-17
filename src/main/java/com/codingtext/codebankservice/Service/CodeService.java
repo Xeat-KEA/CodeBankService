@@ -52,7 +52,7 @@ public class CodeService {
                                                      String sortBy,
                                                      RegisterStatus registerStatus,
                                                      Pageable pageable) {
-        registerStatus = RegisterStatus.REGISTERED;
+        registerStatus = null;
         // 필터링된 문제 목록을 가져옴
         Page<Code> codes = codeRepository.findCodesWithFilterAndSearch(algorithms, difficulties, searchBy, searchText, sortBy, registerStatus, pageable);
 

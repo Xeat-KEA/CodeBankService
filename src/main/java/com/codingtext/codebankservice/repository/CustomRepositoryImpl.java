@@ -38,9 +38,13 @@ public class CustomRepositoryImpl implements CustomRepository {
         BooleanBuilder builder = new BooleanBuilder();
 
         // 필터 조건 설정
-        if (registerStatus != null) {
+        if (registerStatus == null) {
+            // REGISTERED 또는 PERMITTED 상태를 필터링
+            builder.and(code.registerStatus.in(RegisterStatus.REGISTERED, RegisterStatus.PERMITTED));
+        } else {
             builder.and(code.registerStatus.eq(registerStatus));
         }
+
         if (algorithms != null && !algorithms.isEmpty()) {
             List<Algorithm> algorithmEnums = algorithms.stream()
                     .map(algo -> {

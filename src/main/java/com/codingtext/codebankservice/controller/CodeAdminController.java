@@ -242,7 +242,7 @@ public class CodeAdminController {
 
 
         try {
-            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy,RegisterStatus.REGISTERED, pageable);
+            Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy,null, pageable);
             return ResponseEntity.ok(codes);
         } catch (Exception e) {
             Page<CodeDto> codes = codeService.getFilteredAndSearchedCodes(algorithms, difficulties, searchBy, searchText, sortBy,RegisterStatus.REGISTERED, pageable);
