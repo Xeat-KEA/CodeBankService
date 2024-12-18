@@ -60,6 +60,8 @@ public class CodeService {
         List<CodeDto> codeDtos = codes.stream().map(code -> {
             long correctCount = codeHistoryRepository.countByCode_CodeIdAndIsCorrectTrue(code.getCodeId());
             double correctRate = calculateCorrectRate(code.getCodeId());
+            System.out.println("codeId: "+code.getCodeId());
+            System.out.println("correctCount: "+correctCount);
 
             // Base64로 content 인코딩
             String encodedContent = Base64.getEncoder().encodeToString(code.getContent().getBytes());
