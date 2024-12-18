@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Builder
+@Setter
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "code")
@@ -21,7 +22,8 @@ public class Code {
     @Column(nullable = false, length = 30)
     private String title;
 
-    @Column(nullable = false, length = 300)
+    @Column(nullable = false)
+    @Lob
     private String content;
 
     @Enumerated(EnumType.STRING)

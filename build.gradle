@@ -40,7 +40,35 @@ dependencies {
 	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0"
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.8.3'
+	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+	//implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client'
+	//유레카 나중에 k8s할때 지워야함
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	//JSON 토큰
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+	//config 깃허브에서 가져오기
+	implementation 'org.springframework.cloud:spring-cloud-config-client'
+	//그라파나,프로메테우스
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+	//카프카
+	implementation 'org.springframework.kafka:spring-kafka'
+
+
+
+
 }
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.1" // 최신클라우드
+	}
+}
+
 
 tasks.named('test') {
 	useJUnitPlatform()
